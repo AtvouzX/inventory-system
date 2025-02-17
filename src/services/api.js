@@ -1,7 +1,7 @@
 import { createClient } from "@supabase/supabase-js"; // Import Supabase client
 
 // Inisialisasi Supabase client dengan URL dan key dari environment variables (Vite)
-const supabase = createClient(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_KEY);
+export const supabase = createClient(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_KEY);
 
 // Fungsi untuk mengambil semua item dari tabel "items"
 export const getItems = async () => {
