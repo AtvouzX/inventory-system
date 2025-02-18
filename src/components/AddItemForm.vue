@@ -21,7 +21,7 @@
                     <option v-for="cat in categories" :key="cat.id" :value="cat.name">
                         {{ cat.name }}
                     </option>
-                    <option value="__ADD_CATEGORY__">+ Tambah Kategori Baru</option>
+                    <option value="__ADD_CATEGORY__">+ Tambah Kategori</option>
                 </select>
 
                 <div v-if="showCategoryInput" class="mt-2">
