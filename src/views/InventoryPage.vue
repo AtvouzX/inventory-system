@@ -34,15 +34,6 @@ export default {
         const user = ref(null)
         const loading = ref(true)
 
-        // Format tanggal pendaftaran pengguna
-        const formatDate = (timestamp) => {
-            return new Date(timestamp).toLocaleDateString('id-ID', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-            })
-        }
-
         // Ambil data pengguna
         const fetchUser = async () => {
             try {
@@ -99,7 +90,6 @@ export default {
             items,
             loading,
             editingItem,
-            formatDate,
             fetchItems,
             deleteItem,
             editItem,

@@ -118,20 +118,22 @@ const onBarcodeScanned = (result) => {
     console.log("Hasil Scan:", result);
 
     try {
-        // Ambil nilai dari result.data karena JSON ada di dalamnya
+        // Ambil nilai dari result.data dan hilangkan spasi di awal/akhir
         const cleanedBarcode = result.data.trim();
-        const data = JSON.parse(cleanedBarcode);
 
-        // Pastikan data memiliki semua properti yang dibutuhkan
-        if (data.name && data.category && data.quantity) {
-            name.value = data.name;
-            selectedCategory.value = data.category;
-            quantity.value = data.quantity;
+        // Pisahkan data berdasarkan koma
+        const [nameValue, categoryValue, quantityValue] = cleanedBarcode.split(',');
+
+        // Pastikan semua nilai ada dan valid
+        if (nameValue && categoryValue && quantityValue) {
+            name.value = nameValue.trim();
+            selectedCategory.value = categoryValue.trim();
+            quantity.value = parseInt(quantityValue.trim(), 10); // Konversi ke number
         } else {
-            console.error("Data barcode tidak lengkap:", data);
+            console.error("Data barcode tidak lengkap:", cleanedBarcode);
         }
-    } catch {
-        console.error("Format barcode salah:", result.data);
+    } catch (error) {
+        console.error("Format barcode salah:", result.data, error);
     }
 };
 
