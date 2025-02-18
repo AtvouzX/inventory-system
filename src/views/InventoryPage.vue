@@ -10,9 +10,26 @@
 
         <!-- Konten inventaris -->
         <h1>Inventory System</h1>
-        <AddItemForm @item-added="fetchItems" />
-        <ItemList :items="items" @delete-item="deleteItem" @edit-item="editItem" />
-        <EditItemForm v-if="editingItem" :item="editingItem" @update-item="updateItem" />
+        <div class="container mx-auto p-4">
+            <!-- Tombol Tambah Item -->
+            <button 
+                @click="showAddItemPopup = true"
+                class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded mb-6"
+            >
+                + Tambah Item
+            </button>
+
+            <!-- Popup Form -->
+            <AddItemForm 
+                :isVisible="showAddItemPopup" 
+                @item-added="fetchItems"
+                @close="showAddItemPopup = false"
+            />
+
+            <!-- Konten Inventaris -->
+            <ItemList :items="items" @delete-item="deleteItem" @edit-item="editItem" />
+            <EditItemForm v-if="editingItem" :item="editingItem" @update-item="updateItem" />
+        </div>
     </div>
 </template>
 
@@ -28,76 +45,78 @@ import EditItemForm from "@/components/EditItemForm.vue";
 export default {
     components: { AddItemForm, ItemList, EditItemForm },
     setup() {
-        const router = useRouter()
-        const items = ref([])
-        const editingItem = ref(null)
-        const user = ref(null)
-        const loading = ref(true)
+        const router = useRouter();
+        const items = ref([]);
+        const editingItem = ref(null);
+        const user = ref(null);
+        const loading = ref(true);
+        const showAddItemPopup = ref(false); // Tambahkan ini
 
         // Ambil data pengguna
         const fetchUser = async () => {
             try {
-                const { data: { user: currentUser } } = await supabase.auth.getUser()
-                user.value = currentUser
+                const { data: { user: currentUser } } = await supabase.auth.getUser();
+                user.value = currentUser;
             } catch (error) {
-                console.error('Gagal mengambil data pengguna:', error)
+                console.error('Gagal mengambil data pengguna:', error);
             } finally {
-                loading.value = false
+                loading.value = false;
             }
-        }
+        };
 
         // Ambil data inventaris
         const fetchItems = async () => {
             try {
-                items.value = await getItems()
+                items.value = await getItems();
             } catch (error) {
-                console.error("Gagal mengambil items:", error)
+                console.error("Gagal mengambil items:", error);
             }
-        }
+        };
 
         const deleteItem = async (id) => {
-            await apiDeleteItem(id)
-            fetchItems()
-        }
+            await apiDeleteItem(id);
+            fetchItems();
+        };
 
         const editItem = (item) => {
-            editingItem.value = { ...item }
-        }
+            editingItem.value = { ...item };
+        };
 
         const updateItem = async (updatedItem) => {
-            await apiUpdateItem(updatedItem)
-            editingItem.value = null
-            fetchItems()
-        }
+            await apiUpdateItem(updatedItem);
+            editingItem.value = null;
+            fetchItems();
+        };
 
         const handleLogout = async () => {
             try {
-                const { error } = await supabase.auth.signOut()
-                if (error) throw error
-                router.push('/login')
+                const { error } = await supabase.auth.signOut();
+                if (error) throw error;
+                router.push('/login');
             } catch (err) {
-                console.error('Error logging out:', err.message)
+                console.error('Error logging out:', err.message);
             }
-        }
+        };
 
         onMounted(() => {
-            fetchUser()
-            fetchItems()
-        })
+            fetchUser();
+            fetchItems();
+        });
 
         return {
             user,
             items,
             loading,
             editingItem,
+            showAddItemPopup, // Tambahkan ini ke return
             fetchItems,
             deleteItem,
             editItem,
             updateItem,
-            handleLogout
-        }
+            handleLogout,
+        };
     }
-}
+};
 </script>
 
 <style scoped>
