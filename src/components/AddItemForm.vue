@@ -54,6 +54,7 @@ const categories = ref([]);
 const newCategory = ref("");
 const showCategoryInput = ref(false);
 
+// eslint-disable-next-line no-unused-vars
 const props = defineProps({
     isVisible: {
         type: Boolean,
