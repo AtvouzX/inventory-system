@@ -2,8 +2,6 @@
 import { ref, onUnmounted, defineEmits, onMounted } from "vue";
 import QrScanner from "qr-scanner";
 
-QrScanner.WORKER_PATH = "/libs/qr-scanner-worker.min.js"; // Atur path worker manual
-
 const emit = defineEmits(["scanned"]);
 const videoRef = ref(null);
 const cameras = ref([]);
@@ -38,7 +36,8 @@ const startScanner = async () => {
         {
             highlightScanRegion: true,
             highlightCodeOutline: true,
-            preferredCamera: selectedCamera.value // Gunakan kamera yang dipilih
+            preferredCamera: selectedCamera.value, // Gunakan kamera yang dipilih
+            workerSrc: "/libs/qr-scanner-worker.min.js" // Atur path worker di sini
         }
     );
 
