@@ -1,8 +1,8 @@
 <template>
     <!-- Popup Overlay -->
-    <div v-if="isVisible" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4" @click.self="emitClose">
+    <div v-if="isVisible" class="fixed inset-0 bg-opacity-50 flex items-center justify-center p-4" @click.self="emitClose">
         <!-- Popup Content -->
-        <div class="bg-white rounded-lg p-6 w-full max-w-md">
+        <div class="bg-gray-800 rounded-lg p-6 w-full max-w-md">
             <!-- Header dengan tombol tutup -->
             <div class="flex justify-between items-center mb-4">
                 <h2 class="text-lg font-bold">Tambah Item</h2>
