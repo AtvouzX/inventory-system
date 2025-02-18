@@ -1,22 +1,21 @@
-// EditItemForm.vue
 <template>
     <div>
         <h2>Edit Item</h2>
         <form @submit.prevent="submitForm">
             <label>
                 Name:
-                <input v-model="updatedItem.name" required /> <!-- Input for item name -->
+                <input v-model="updatedItem.name" required />
             </label>
             <label>
                 Category:
-                <input v-model="updatedItem.category" required /> <!-- Input for item category -->
+                <input v-model="updatedItem.category" required />
             </label>
             <label>
                 Quantity:
-                <input type="number" v-model="updatedItem.quantity" required /> <!-- Input for item quantity -->
+                <input type="number" v-model="updatedItem.quantity" required />
             </label>
-            <button type="submit">Update Item</button> <!-- Button to submit the form -->
-            <button type="button" @click="$emit('update-item', null)">Cancel</button> <!-- Button to cancel editing -->
+            <button type="submit">Update Item</button>
+            <button type="button" @click="cancel">Cancel</button>
         </form>
     </div>
 </template>
@@ -25,22 +24,26 @@
 import { ref, watch } from "vue";
 
 export default {
-    props: ["item"], // Receives the item to be edited as a prop
+    props: ["item"],
     setup(props, { emit }) {
-        const updatedItem = ref({ ...props.item }); // Creates a reactive copy of the item
+        const updatedItem = ref({ ...props.item });
 
         watch(
             () => props.item,
             (newItem) => {
-                updatedItem.value = { ...newItem }; // Watches for changes in the item prop and updates the local state
+                updatedItem.value = { ...newItem };
             }
         );
 
         const submitForm = () => {
-            emit("update-item", updatedItem.value); // Emits the updated item to the parent component
+            emit("update-item", updatedItem.value);
         };
 
-        return { updatedItem, submitForm };
+        const cancel = () => {
+            emit("cancel");
+        };
+
+        return { updatedItem, submitForm, cancel };
     },
 };
 </script>
