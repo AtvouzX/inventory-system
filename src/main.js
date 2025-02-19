@@ -1,7 +1,5 @@
 import './assets/main.css'
-
 import { createApp } from 'vue'
 import App from './App.vue'
-import router from "./router";
 
-createApp(App).use(router).mount("#app"); // Mounts the Vue application to the DOM
+createApp(App).mount('#app')

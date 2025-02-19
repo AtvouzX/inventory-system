@@ -12,19 +12,13 @@
         <h1>Inventory System</h1>
         <div class="container mx-auto p-4">
             <!-- Tombol Tambah Item -->
-            <button 
-                @click="showAddItemPopup = true"
-                class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded mb-6"
-            >
+            <button @click="showAddItemPopup = true"
+                class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded mb-6">
                 + Tambah Item
             </button>
 
             <!-- Popup Form -->
-            <AddItemForm 
-                :isVisible="showAddItemPopup" 
-                @item-added="fetchItems"
-                @close="showAddItemPopup = false"
-            />
+            <AddItemForm :isVisible="showAddItemPopup" @item-added="fetchItems" @close="showAddItemPopup = false" />
 
             <!-- Konten Inventaris -->
             <ItemList :items="items" @delete-item="deleteItem" @edit-item="editItem" />
@@ -37,22 +31,19 @@
 import { ref, onMounted } from "vue";
 import { getItems, deleteItem as apiDeleteItem, updateItem as apiUpdateItem } from "@/services/api";
 import { supabase } from "@/services/api";
-import { useRouter } from "vue-router";
 import AddItemForm from "@/components/AddItemForm.vue";
 import ItemList from "@/components/ItemList.vue";
 import EditItemForm from "@/components/EditItemForm.vue";
 
 export default {
     components: { AddItemForm, ItemList, EditItemForm },
-    setup() {
-        const router = useRouter();
+    setup(props, { emit }) {
         const items = ref([]);
         const editingItem = ref(null);
         const user = ref(null);
         const loading = ref(true);
-        const showAddItemPopup = ref(false); // Tambahkan ini
+        const showAddItemPopup = ref(false);
 
-        // Ambil data pengguna
         const fetchUser = async () => {
             try {
                 const { data: { user: currentUser } } = await supabase.auth.getUser();
@@ -64,7 +55,6 @@ export default {
             }
         };
 
-        // Ambil data inventaris
         const fetchItems = async () => {
             try {
                 items.value = await getItems();
@@ -92,7 +82,7 @@ export default {
             try {
                 const { error } = await supabase.auth.signOut();
                 if (error) throw error;
-                router.push('/login');
+                emit('logout');
             } catch (err) {
                 console.error('Error logging out:', err.message);
             }
@@ -108,7 +98,7 @@ export default {
             items,
             loading,
             editingItem,
-            showAddItemPopup, // Tambahkan ini ke return
+            showAddItemPopup,
             fetchItems,
             deleteItem,
             editItem,

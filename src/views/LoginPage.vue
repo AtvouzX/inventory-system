@@ -13,14 +13,12 @@
 <script>
 import { ref } from "vue";
 import { supabase } from "@/services/api.js";
-import { useRouter } from "vue-router";
 
 export default {
-    setup() {
+    setup(props, { emit }) {
         const email = ref("");
         const password = ref("");
         const error = ref("");
-        const router = useRouter();
 
         const handleLogin = async () => {
             try {
@@ -31,8 +29,8 @@ export default {
 
                 if (authError) throw authError;
 
-                // Redirect ke halaman inventaris setelah login berhasil
-                router.push("/inventory");
+                // Emit event login ke parent component
+                emit('login');
             } catch (err) {
                 error.value = err.message;
             }

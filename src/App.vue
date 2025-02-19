@@ -1,15 +1,31 @@
 <template>
   <div>
-    <router-view></router-view>
+    <LoginPage v-if="!isLoggedIn" @login="handleLogin" />
+    <InventoryPage v-else @logout="handleLogout" />
   </div>
 </template>
 
 <script>
+import LoginPage from './views/LoginPage.vue';
+import InventoryPage from './views/InventoryPage.vue';
+
 export default {
-  name: "App",
+  data() {
+    return {
+      isLoggedIn: false,
+    };
+  },
+  methods: {
+    handleLogin() {
+      this.isLoggedIn = true;
+    },
+    handleLogout() {
+      this.isLoggedIn = false;
+    },
+  },
+  components: {
+    LoginPage,
+    InventoryPage,
+  },
 };
 </script>
-
-<style>
-/* Tambahkan styling sesuai kebutuhan */
-</style>
