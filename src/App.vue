@@ -1,13 +1,13 @@
 <template>
   <div>
     <LoginPage v-if="!isLoggedIn" @login="handleLogin" />
-    <InventoryPage v-else @logout="handleLogout" />
+    <ContainerPage v-else @logout="handleLogout" />
   </div>
 </template>
 
 <script>
 import LoginPage from './views/LoginPage.vue';
-import InventoryPage from './views/InventoryPage.vue';
+import ContainerPage from './views/ContainerPage.vue';
 
 export default {
   data() {
@@ -25,7 +25,7 @@ export default {
   },
   components: {
     LoginPage,
-    InventoryPage,
+    ContainerPage,
   },
 };
 </script>

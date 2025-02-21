@@ -1,85 +1,83 @@
 <template>
-    <div>
-        <h2>Inventory Items</h2>
-        <ul>
-            <li v-for="item in items" :key="item.id">
-                {{ item.name }} - {{ item.category }} ({{ item.quantity }})
-                <button @click="openEditModal(item)">Edit</button>
-                <button @click="$emit('delete-item', item.id)">Delete</button>
-            </li>
-        </ul>
-
-        <!-- Edit Item Modal -->
-        <div v-if="isEditModalOpen" class="modal">
-            <div class="modal-content">
-                <EditItemForm 
-                    :item="selectedItem" 
-                    @update-item="handleUpdateItem" 
-                    @cancel="closeEditModal"
-                />
-            </div>
-        </div>
-    </div>
+    <v-card>
+        <v-card-title>Products</v-card-title>
+        <v-data-table :headers="headers" :items="items" :loading="isLoading" loading-text="Loading... Please wait">
+            <template v-slot:[`item.actions`]="{ item }">
+                <v-btn icon @click="editItem(item)">
+                    <v-icon>mdi-pencil</v-icon>
+                </v-btn>
+                <v-btn icon @click="handleDelete(item.id)">
+                    <v-icon>mdi-delete</v-icon>
+                </v-btn>
+            </template>
+        </v-data-table>
+    </v-card>
 </template>
 
 <script>
-import EditItemForm from './EditItemForm.vue';
+import { getItems, deleteItem, getCategories } from '@/services/api'; // Sesuaikan path import
 
 export default {
-    components: {
-        EditItemForm
-    },
-    props: ["items"],
     data() {
         return {
-            isEditModalOpen: false,
-            selectedItem: null
+            isLoading: true,
+            items: [],
+            headers: [
+                { title: 'Name', key: 'name' },
+                { title: 'Category', key: 'categoryName' }, // Ubah key ke categoryName
+                { title: 'Quantity', key: 'quantity' },
+                { title: 'Actions', key: 'actions', sortable: false },
+            ],
         };
     },
+    async created() {
+        await this.fetchCategories(); // Ambil kategori
+        await this.fetchItems(); // Ambil item
+    },
     methods: {
-        openEditModal(item) {
-            this.selectedItem = { ...item };
-            this.isEditModalOpen = true;
-        },
-        closeEditModal() {
-            this.isEditModalOpen = false;
-        },
-        handleUpdateItem(updatedItem) {
-            // Check if the updated name and category already exist
-            const isDuplicate = this.items.some(item => 
-                item.name === updatedItem.name && 
-                item.category === updatedItem.category &&
-                item.id !== updatedItem.id
-            );
-
-            if (isDuplicate) {
-                alert("Item with the same name and category already exists.");
-                return;
+        async fetchCategories() {
+            try {
+                this.categories = await getCategories();
+            } catch (error) {
+                console.error('Error fetching categories:', error);
             }
+        },
 
-            this.$emit('update-item', updatedItem);
-            this.closeEditModal();
-        }
-    }
+        async fetchItems() {
+            this.isLoading = true;
+            try {
+                const items = await getItems();
+                // Gabungkan data item dengan nama kategori
+                this.items = items.map(item => {
+                    const category = this.categories.find(cat => cat.id === item.category);
+                    return {
+                        ...item,
+                        categoryName: category ? category.name : 'Unknown', // Tambahkan nama kategori
+                    };
+                });
+            } catch (error) {
+                console.error('Error fetching items:', error);
+            } finally {
+                this.isLoading = false;
+            }
+        },
+        editItem(item) {
+            // Logika untuk edit item
+            console.log('Edit item:', item);
+        },
+        async handleDelete(id) {
+            try {
+                await deleteItem(id); // Panggil API delete
+                this.items = this.items.filter(item => item.id !== id); // Perbarui daftar items
+                console.log('Item deleted successfully');
+            } catch (error) {
+                console.error('Error deleting item:', error);
+            }
+        },
+    },
 };
 </script>
 
 <style scoped>
-.modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.modal-content {
-    background-color: gray;
-    padding: 20px;
-    border-radius: 5px;
-}
+/* Tambahkan gaya kustom jika diperlukan */
 </style>

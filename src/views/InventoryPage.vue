@@ -1,126 +1,35 @@
+// InventoryPage.vue
 <template>
     <div>
-        <!-- Header dengan informasi pengguna -->
-        <div class="user-info">
-            <div v-if="user">
-                <h2>Selamat datang, {{ user.email }}!</h2>
-            </div>
-            <button @click="handleLogout" class="logout-button">Logout</button>
-        </div>
-
-        <!-- Konten inventaris -->
-        <h1>Inventory System</h1>
-        <div class="container mx-auto p-4">
-            <!-- Tombol Tambah Item -->
-            <button @click="showAddItemPopup = true"
-                class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded mb-6">
-                + Tambah Item
-            </button>
-
-            <!-- Popup Form -->
-            <AddItemForm :isVisible="showAddItemPopup" @item-added="fetchItems" @close="showAddItemPopup = false" />
-
-            <!-- Konten Inventaris -->
-            <ItemList :items="items" @delete-item="deleteItem" @edit-item="editItem" />
-            <EditItemForm v-if="editingItem" :item="editingItem" @update-item="updateItem" />
-        </div>
+        <AddItemForm @item-added="fetchItems" />
+        <ItemList :items="items" />
     </div>
 </template>
 
 <script>
-import { ref, onMounted } from "vue";
-import { getItems, deleteItem as apiDeleteItem, updateItem as apiUpdateItem } from "@/services/api";
-import { supabase } from "@/services/api";
-import AddItemForm from "@/components/AddItemForm.vue";
-import ItemList from "@/components/ItemList.vue";
-import EditItemForm from "@/components/EditItemForm.vue";
+import { ref, onMounted } from 'vue';
+import AddItemForm from '@/components/AddItemForm.vue';
+import ItemList from '@/components/ItemList.vue';
+import { getItems } from '@/services/api';
 
 export default {
-    components: { AddItemForm, ItemList, EditItemForm },
-    setup(props, { emit }) {
+    components: { AddItemForm, ItemList },
+    setup() {
         const items = ref([]);
-        const editingItem = ref(null);
-        const user = ref(null);
-        const loading = ref(true);
-        const showAddItemPopup = ref(false);
-
-        const fetchUser = async () => {
-            try {
-                const { data: { user: currentUser } } = await supabase.auth.getUser();
-                user.value = currentUser;
-            } catch (error) {
-                console.error('Gagal mengambil data pengguna:', error);
-            } finally {
-                loading.value = false;
-            }
-        };
 
         const fetchItems = async () => {
-            try {
-                items.value = await getItems();
-            } catch (error) {
-                console.error("Gagal mengambil items:", error);
+            const { data, error } = await getItems();
+            if (!error) {
+                items.value = data;
             }
         };
 
-        const deleteItem = async (id) => {
-            await apiDeleteItem(id);
-            fetchItems();
-        };
-
-        const editItem = (item) => {
-            editingItem.value = { ...item };
-        };
-
-        const updateItem = async (updatedItem) => {
-            await apiUpdateItem(updatedItem);
-            editingItem.value = null;
-            fetchItems();
-        };
-
-        const handleLogout = async () => {
-            try {
-                const { error } = await supabase.auth.signOut();
-                if (error) throw error;
-                emit('logout');
-            } catch (err) {
-                console.error('Error logging out:', err.message);
-            }
-        };
-
-        onMounted(() => {
-            fetchUser();
-            fetchItems();
-        });
+        onMounted(fetchItems);
 
         return {
-            user,
             items,
-            loading,
-            editingItem,
-            showAddItemPopup,
             fetchItems,
-            deleteItem,
-            editItem,
-            updateItem,
-            handleLogout,
         };
-    }
+    },
 };
 </script>
-
-<style scoped>
-.logout-button {
-    background-color: #e74c3c;
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-}
-
-.logout-button:hover {
-    background-color: #c0392b;
-}
-</style>

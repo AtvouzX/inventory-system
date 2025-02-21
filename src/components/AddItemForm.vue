@@ -1,78 +1,69 @@
 <template>
-    <!-- Popup Overlay -->
-    <div v-if="isVisible" class="fixed inset-0 bg-opacity-50 flex items-center justify-center p-4" @click.self="emitClose">
-        <!-- Popup Content -->
-        <div class="bg-gray-800 rounded-lg p-6 w-full max-w-md">
-            <!-- Header dengan tombol tutup -->
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-lg font-bold">Tambah Item</h2>
-                <button @click="emitClose" class="text-gray-500 hover:text-gray-700 text-xl">
-                    &times;
-                </button>
-            </div>
+    <div>
+        <!-- Tombol untuk membuka popup -->
+        <v-btn @click="openPopup">Tambah Item</v-btn>
 
-            <!-- Konten Form -->
-            <input v-model="name" placeholder="Nama Item / Barcode" class="border p-2 w-full mb-2" />
-            <BarcodeScanner @scanned="onBarcodeScanned" />
-            
-            <div class="relative mb-2">
-                <select v-model="selectedCategory" @change="handleCategorySelect" class="border p-2 w-full">
-                    <option disabled value="">Pilih Kategori</option>
-                    <option v-for="cat in categories" :key="cat.id" :value="cat.name">
-                        {{ cat.name }}
-                    </option>
-                    <option value="__ADD_CATEGORY__">+ Tambah Kategori</option>
-                </select>
+        <!-- Popup -->
+        <v-dialog v-model="isPopupVisible" max-width="500" persistent>
+            <v-card class="bg-gray-800">
+                <!-- Header dengan tombol tutup -->
+                <v-card-title class="d-flex justify-space-between align-center">
+                    <span class="text-h6">Tambah Item</span>
+                    <v-btn icon @click="closePopup">
+                        <v-icon>mdi-close</v-icon>
+                    </v-btn>
+                </v-card-title>
 
-                <div v-if="showCategoryInput" class="mt-2">
-                    <input v-model="newCategory" placeholder="Nama Kategori Baru" class="border p-2 w-full mb-2" />
-                    <button @click="handleAddCategory" class="bg-blue-500 text-white p-2 w-full">
-                        Tambah
-                    </button>
-                </div>
-            </div>
+                <!-- Konten Form -->
+                <v-card-text>
+                    <v-text-field v-model="name" placeholder="Nama Item / Barcode" outlined class="mb-4"></v-text-field>
+                    <BarcodeScanner @scanned="onBarcodeScanned" />
 
-            <input v-model.number="quantity" type="number" placeholder="Jumlah" class="border p-2 w-full mb-4" />
-            
-            <button @click="handleAddItem" class="bg-green-500 text-white p-2 w-full">
-                Tambah Item
-            </button>
-        </div>
+                    <!-- Input untuk kategori -->
+                    <v-select
+                        v-model="selectedCategory"
+                        :items="categories"
+                        item-title="name"
+                        item-value="id"
+                        label="Pilih Kategori"
+                        outlined
+                        class="mb-4"
+                    ></v-select>
+
+                    <v-text-field v-model.number="quantity" type="number" placeholder="Jumlah" outlined
+                        class="mb-4"></v-text-field>
+
+                    <v-btn @click="handleAddItem" color="success" block>
+                        Tambah Item
+                    </v-btn>
+                </v-card-text>
+            </v-card>
+        </v-dialog>
     </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from "vue";
-import { getCategories, addCategory, addItem } from "../services/api";
+import { addItem, getCategories } from "../services/api";
 import BarcodeScanner from "./BarcodeScanner.vue";
 
 // State untuk form
 const name = ref("");
 const selectedCategory = ref("");
 const quantity = ref(1);
-const categories = ref([]);
-const newCategory = ref("");
-const showCategoryInput = ref(false);
-
-// eslint-disable-next-line no-unused-vars
-const props = defineProps({
-    isVisible: {
-        type: Boolean,
-        default: false
-    }
-});
-
+const isPopupVisible = ref(false); // State internal untuk popup
+const categories = ref([]); // State untuk menyimpan daftar kategori
 const emit = defineEmits(["itemAdded", "close"]);
 
-
-// Fetch daftar kategori saat komponen dimount
-const fetchCategories = async () => {
+// Mengambil daftar kategori saat komponen dimuat
+onMounted(async () => {
     try {
-        categories.value = await getCategories();
+        const fetchedCategories = await getCategories();
+        categories.value = fetchedCategories;
     } catch (error) {
         console.error("Gagal mengambil kategori:", error);
     }
-};
+});
 
 // Menambahkan item baru
 const handleAddItem = async () => {
@@ -85,46 +76,24 @@ const handleAddItem = async () => {
         await addItem({
             name: name.value,
             category: selectedCategory.value,
-            quantity: quantity.value
+            quantity: quantity.value,
         });
-        emit("itemAdded");
-        emit("close"); // Tutup popup setelah berhasil tambah item
+        emit("itemAdded"); // Emit event untuk refresh data di parent
+        closePopup(); // Tutup popup setelah berhasil tambah item
     } catch (error) {
         console.error("Gagal menambahkan item:", error);
     }
 };
 
-const emitClose = () => {
-    emit("close");
+// Membuka popup
+const openPopup = () => {
+    isPopupVisible.value = true;
 };
 
-// Menambahkan kategori baru
-const handleAddCategory = async () => {
-    if (!newCategory.value.trim()) {
-        alert("Nama kategori tidak boleh kosong!");
-        return;
-    }
-
-    try {
-        await addCategory(newCategory.value);
-        await fetchCategories();
-        selectedCategory.value = newCategory.value;
-        newCategory.value = "";
-        showCategoryInput.value = false;
-    } catch (error) {
-        console.error("Gagal menambahkan kategori:", error);
-    }
+// Menutup popup
+const closePopup = () => {
+    isPopupVisible.value = false;
 };
-
-// Menangani pemilihan kategori dari dropdown
-const handleCategorySelect = (event) => {
-    if (event.target.value === "__ADD_CATEGORY__") {
-        showCategoryInput.value = true;
-    } else {
-        selectedCategory.value = event.target.value;
-    }
-};
-
 
 // Menangani hasil scan barcode
 const onBarcodeScanned = (result) => {
@@ -135,7 +104,7 @@ const onBarcodeScanned = (result) => {
         const cleanedBarcode = result.data.trim();
 
         // Pisahkan data berdasarkan koma
-        const [nameValue, categoryValue, quantityValue] = cleanedBarcode.split(',');
+        const [nameValue, categoryValue, quantityValue] = cleanedBarcode.split(",");
 
         // Pastikan semua nilai ada dan valid
         if (nameValue && categoryValue && quantityValue) {
@@ -149,9 +118,8 @@ const onBarcodeScanned = (result) => {
         console.error("Format barcode salah:", result.data, error);
     }
 };
-
-
-// Fetch kategori saat komponen dimount
-onMounted(fetchCategories);
 </script>
 
+<style scoped>
+/* Tambahkan gaya kustom jika diperlukan */
+</style>
