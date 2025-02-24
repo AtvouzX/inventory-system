@@ -1,83 +1,128 @@
 <template>
     <v-card>
-        <v-card-title>Products</v-card-title>
-        <v-data-table :headers="headers" :items="items" :loading="isLoading" loading-text="Loading... Please wait">
-            <template v-slot:[`item.actions`]="{ item }">
-                <v-btn icon @click="editItem(item)">
-                    <v-icon>mdi-pencil</v-icon>
-                </v-btn>
-                <v-btn icon @click="handleDelete(item.id)">
-                    <v-icon>mdi-delete</v-icon>
-                </v-btn>
-            </template>
-        </v-data-table>
+        <v-card-title class="d-flex justify-space-between mb-6">
+            <div>
+                <v-icon start>mdi-format-list-bulleted</v-icon>
+                Item List
+            </div>
+            <AddItem :categories="categories" @item-added="fetchItems" />
+        </v-card-title>
+
+        <v-table density="compact">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Category</th>
+                    <th>Quantity</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                <tr v-for="item in itemsWithCategory" :key="item.id">
+                    <td>{{ item.name }}</td>
+                    <td>{{ item.categories ? item.categories.name : 'Uncategorized' }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>
+                        <!-- Tombol Edit -->
+                        <v-btn icon="mdi-pencil" variant="text" color="primary" @click="openEditDialog(item)" />
+
+                        <!-- Tombol Hapus -->
+                        <v-btn icon="mdi-delete" variant="text" color="error" @click="handleDeleteItem(item.id)" />
+
+                        <!-- Tombol QR Generator -->
+                        <v-btn icon="mdi-qrcode" variant="text" color="secondary" @click="openQRDialog(item.id)" />
+                    </td>
+                </tr>
+            </tbody>
+        </v-table>
+
+        <!-- Dialog untuk Edit Item -->
+        <v-dialog v-model="editDialog" max-width="500">
+            <v-card>
+                <v-card-title>Edit Item</v-card-title>
+                <v-card-text>
+                    <v-text-field v-model="editedItem.name" label="Name" />
+                    <v-select v-model="editedItem.category_id" :items="categories" item-title="name" item-value="id"
+                        label="Category" />
+                    <v-text-field v-model="editedItem.quantity" label="Quantity" type="number" />
+                </v-card-text>
+                <v-card-actions>
+                    <v-btn @click="editDialog = false">Cancel</v-btn>
+                    <v-btn color="primary" @click="saveItem">Save</v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+
+        <!-- Komponen QR Generator -->
+        <QRGenerator ref="qrGenerator" v-if="qrGeneratorReady" />
+
     </v-card>
 </template>
 
-<script>
-import { getItems, deleteItem, getCategories } from '@/services/api'; // Sesuaikan path import
+<script setup>
+import { ref, computed, onMounted } from 'vue';
+import { deleteItem, updateItem } from '@/services/api';
+import AddItem from './AddItem.vue';
+import QRGenerator from './QRGenerator.vue'; // Import komponen QRGenerator
 
-export default {
-    data() {
-        return {
-            isLoading: true,
-            items: [],
-            headers: [
-                { title: 'Name', key: 'name' },
-                { title: 'Category', key: 'categoryName' }, // Ubah key ke categoryName
-                { title: 'Quantity', key: 'quantity' },
-                { title: 'Actions', key: 'actions', sortable: false },
-            ],
-        };
-    },
-    async created() {
-        await this.fetchCategories(); // Ambil kategori
-        await this.fetchItems(); // Ambil item
-    },
-    methods: {
-        async fetchCategories() {
-            try {
-                this.categories = await getCategories();
-            } catch (error) {
-                console.error('Error fetching categories:', error);
-            }
-        },
+const props = defineProps({
+    items: Array,
+    categories: Array,
+});
 
-        async fetchItems() {
-            this.isLoading = true;
-            try {
-                const items = await getItems();
-                // Gabungkan data item dengan nama kategori
-                this.items = items.map(item => {
-                    const category = this.categories.find(cat => cat.id === item.category);
-                    return {
-                        ...item,
-                        categoryName: category ? category.name : 'Unknown', // Tambahkan nama kategori
-                    };
-                });
-            } catch (error) {
-                console.error('Error fetching items:', error);
-            } finally {
-                this.isLoading = false;
-            }
-        },
-        editItem(item) {
-            // Logika untuk edit item
-            console.log('Edit item:', item);
-        },
-        async handleDelete(id) {
-            try {
-                await deleteItem(id); // Panggil API delete
-                this.items = this.items.filter(item => item.id !== id); // Perbarui daftar items
-                console.log('Item deleted successfully');
-            } catch (error) {
-                console.error('Error deleting item:', error);
-            }
-        },
-    },
+const emit = defineEmits(['item-deleted', 'item-updated']);
+
+const itemsWithCategory = computed(() =>
+    props.items.map(item => ({
+        ...item,
+        category: props.categories.find(c => c.id === item.category_id),
+    }))
+);
+
+const editDialog = ref(false);
+const editedItem = ref({});
+
+const qrGenerator = ref(null); // Ref untuk komponen QRGenerator
+const qrGeneratorReady = ref(false);
+
+// Buka dialog edit
+const openEditDialog = (item) => {
+    editedItem.value = { ...item };
+    editDialog.value = true;
+};
+
+onMounted(() => {
+    qrGeneratorReady.value = true;
+});
+
+// Buka dialog QR code
+const openQRDialog = (uuid) => {
+    if (qrGenerator.value) {
+        qrGenerator.value.openDialog(uuid);
+    } else {
+        console.error('QR Generator is not ready');
+    }
+};
+
+// Fungsi untuk menghapus item
+const handleDeleteItem = async (id) => {
+    try {
+        await deleteItem(id);
+        emit('item-deleted');
+    } catch (error) {
+        console.error('Error deleting item:', error);
+    }
+};
+
+// Fungsi untuk menyimpan perubahan item
+const saveItem = async () => {
+    try {
+        await updateItem(editedItem.value);
+        emit('item-updated');
+        editDialog.value = false;
+    } catch (error) {
+        console.error('Error updating item:', error);
+    }
 };
 </script>
-
-<style scoped>
-/* Tambahkan gaya kustom jika diperlukan */
-</style>

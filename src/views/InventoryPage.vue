@@ -1,35 +1,39 @@
-// InventoryPage.vue
 <template>
-    <div>
-        <AddItemForm @item-added="fetchItems" />
-        <ItemList :items="items" />
-    </div>
+    <v-container>
+        <v-row>
+            <v-col cols="12">
+                <h1 class="text-h4 mb-6">Inventory Management</h1>
+            </v-col>
+
+            <v-col>
+                <ItemList :items="items" :categories="categories" @item-deleted="fetchItems"
+                    @item-updated="fetchItems" />
+            </v-col>
+
+        </v-row>
+    </v-container>
 </template>
 
-<script>
+<script setup>
 import { ref, onMounted } from 'vue';
-import AddItemForm from '@/components/AddItemForm.vue';
+import { getItems, getCategories } from '@/services/api';
 import ItemList from '@/components/ItemList.vue';
-import { getItems } from '@/services/api';
 
-export default {
-    components: { AddItemForm, ItemList },
-    setup() {
-        const items = ref([]);
+const items = ref([]);
+const categories = ref([]);
 
-        const fetchItems = async () => {
-            const { data, error } = await getItems();
-            if (!error) {
-                items.value = data;
-            }
-        };
+const fetchData = async () => {
+    try {
+        items.value = await getItems();
+        categories.value = await getCategories();
+    } catch (error) {
+        console.error('Error loading data:', error);
+    }
+};
 
-        onMounted(fetchItems);
+onMounted(fetchData);
 
-        return {
-            items,
-            fetchItems,
-        };
-    },
+const fetchItems = () => {
+    getItems().then(data => items.value = data);
 };
 </script>
