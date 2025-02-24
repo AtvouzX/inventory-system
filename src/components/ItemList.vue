@@ -1,85 +1,132 @@
 <template>
-    <div>
-        <h2>Inventory Items</h2>
-        <ul>
-            <li v-for="item in items" :key="item.id">
-                {{ item.name }} - {{ item.category }} ({{ item.quantity }})
-                <button @click="openEditModal(item)">Edit</button>
-                <button @click="$emit('delete-item', item.id)">Delete</button>
-            </li>
-        </ul>
-
-        <!-- Edit Item Modal -->
-        <div v-if="isEditModalOpen" class="modal">
-            <div class="modal-content">
-                <EditItemForm 
-                    :item="selectedItem" 
-                    @update-item="handleUpdateItem" 
-                    @cancel="closeEditModal"
-                />
+    <v-card>
+        <v-card-title class="d-flex justify-space-between mb-6">
+            <div>
+                <v-icon start>mdi-format-list-bulleted</v-icon>
+                Item List
             </div>
-        </div>
-    </div>
+            <AddItem :categories="categories" @item-added="fetchItems" />
+        </v-card-title>
+
+        <v-table density="compact">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Category</th>
+                    <th>Quantity</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                <tr v-for="item in itemsWithCategory" :key="item.id">
+                    <td>{{ item.name }}</td>
+                    <td>{{ item.categories ? item.categories.name : 'Uncategorized' }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>
+                        <!-- Tombol Edit -->
+                        <v-btn icon="mdi-pencil" variant="text" color="primary" @click="openEditDialog(item)" />
+
+                        <!-- Tombol Hapus -->
+                        <v-btn icon="mdi-delete" variant="text" color="error" @click="handleDeleteItem(item.id)" />
+
+                        <!-- Tombol QR Generator -->
+                        <v-btn icon="mdi-qrcode" variant="text" color="secondary" @click="openQRDialog(item.id)" />
+                    </td>
+                </tr>
+            </tbody>
+        </v-table>
+
+        <!-- Dialog untuk Edit Item -->
+        <v-dialog v-model="editDialog" max-width="500">
+            <v-card>
+                <v-card-title>Edit Item</v-card-title>
+                <v-card-text>
+                    <v-text-field v-model="editedItem.name" label="Name" />
+                    <v-select v-model="editedItem.category_id" :items="categories" item-title="name" item-value="id"
+                        label="Category" />
+                    <v-text-field v-model="editedItem.quantity" label="Quantity" type="number" />
+                </v-card-text>
+                <v-card-actions>
+                    <v-btn @click="editDialog = false">Cancel</v-btn>
+                    <v-btn color="primary" @click="saveItem">Save</v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+
+        <!-- Komponen QR Generator -->
+        <QRGenerator ref="qrGenerator" v-if="qrGeneratorReady" />
+
+    </v-card>
 </template>
 
-<script>
-import EditItemForm from './EditItemForm.vue';
+<script setup>
+import { ref, computed, onMounted } from 'vue';
+import { deleteItem, updateItem } from '@/services/api';
+import AddItem from './AddItem.vue';
+import QRGenerator from './QRGenerator.vue'; // Import komponen QRGenerator
 
-export default {
-    components: {
-        EditItemForm
-    },
-    props: ["items"],
-    data() {
-        return {
-            isEditModalOpen: false,
-            selectedItem: null
-        };
-    },
-    methods: {
-        openEditModal(item) {
-            this.selectedItem = { ...item };
-            this.isEditModalOpen = true;
-        },
-        closeEditModal() {
-            this.isEditModalOpen = false;
-        },
-        handleUpdateItem(updatedItem) {
-            // Check if the updated name and category already exist
-            const isDuplicate = this.items.some(item => 
-                item.name === updatedItem.name && 
-                item.category === updatedItem.category &&
-                item.id !== updatedItem.id
-            );
+const props = defineProps({
+    items: Array,
+    categories: Array,
+});
 
-            if (isDuplicate) {
-                alert("Item with the same name and category already exists.");
-                return;
-            }
+const emit = defineEmits(['item-deleted', 'item-updated', 'item-added']);
 
-            this.$emit('update-item', updatedItem);
-            this.closeEditModal();
-        }
+const itemsWithCategory = computed(() =>
+    props.items.map(item => ({
+        ...item,
+        category: props.categories.find(c => c.id === item.category_id),
+    }))
+);
+
+const editDialog = ref(false);
+const editedItem = ref({});
+
+const qrGenerator = ref(null); // Ref untuk komponen QRGenerator
+const qrGeneratorReady = ref(false);
+
+// Buka dialog edit
+const openEditDialog = (item) => {
+    editedItem.value = { ...item };
+    editDialog.value = true;
+};
+
+onMounted(() => {
+    qrGeneratorReady.value = true;
+});
+
+// Buka dialog QR code
+const openQRDialog = (uuid) => {
+    if (qrGenerator.value) {
+        qrGenerator.value.openDialog(uuid);
+    } else {
+        console.error('QR Generator is not ready');
     }
 };
+
+// Fungsi untuk menghapus item
+const handleDeleteItem = async (id) => {
+    try {
+        await deleteItem(id);
+        emit('item-deleted');
+    } catch (error) {
+        console.error('Error deleting item:', error);
+    }
+};
+
+// Fungsi untuk menyimpan perubahan item
+const saveItem = async () => {
+    try {
+        await updateItem(editedItem.value);
+        emit('item-updated');
+        editDialog.value = false;
+    } catch (error) {
+        console.error('Error updating item:', error);
+    }
+};
+
+const fetchItems = () => {
+    emit('item-added'); // Teruskan event ke parent
+};
 </script>
-
-<style scoped>
-.modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.modal-content {
-    background-color: gray;
-    padding: 20px;
-    border-radius: 5px;
-}
-</style>
