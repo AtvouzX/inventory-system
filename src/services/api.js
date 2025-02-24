@@ -65,3 +65,18 @@ export const updateItem = async (item) => {
 
     if (error) console.error("Error updating item:", error);
 };
+
+// Mengambil item berdasarkan UUID
+export const getItemByUUID = async (uuid) => {
+    const { data, error } = await supabase
+        .from("items")
+        .select("id, name, quantity, category_id, categories(name)")
+        .eq("id", uuid) // Cari berdasarkan kolom 'uuid'
+        .single();
+
+    if (error) {
+        console.error("Error fetching item by UUID:", error);
+        return null;
+    }
+    return data;
+};

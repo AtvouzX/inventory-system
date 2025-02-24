@@ -71,7 +71,7 @@ const props = defineProps({
     categories: Array,
 });
 
-const emit = defineEmits(['item-deleted', 'item-updated']);
+const emit = defineEmits(['item-deleted', 'item-updated', 'item-added']);
 
 const itemsWithCategory = computed(() =>
     props.items.map(item => ({
@@ -124,5 +124,9 @@ const saveItem = async () => {
     } catch (error) {
         console.error('Error updating item:', error);
     }
+};
+
+const fetchItems = () => {
+    emit('item-added'); // Teruskan event ke parent
 };
 </script>

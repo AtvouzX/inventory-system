@@ -61,14 +61,31 @@ const startScanner = async () => {
     qrScanner = new QrScanner(
         videoRef.value,
         (result) => {
-            emit("scanned", result);
+            let cleanedResult;
+
+            // Jika hasil scan adalah objek, ambil properti yang sesuai
+            if (typeof result === 'object' && result.data) {
+                cleanedResult = result.data;
+            }
+            // Jika hasil scan adalah string, langsung gunakan
+            else if (typeof result === 'string') {
+                cleanedResult = result.trim(); // Bersihkan spasi atau newline
+            }
+            // Jika format tidak dikenali, tampilkan error
+            else {
+                console.error("Unexpected scan result format:", result);
+                alert("Format QR Code tidak dikenali. Pastikan QR Code berisi UUID yang valid.");
+                return;
+            }
+
+            emit("scanned", cleanedResult); // Kirim hasil yang sudah dibersihkan
             stopScanner();
         },
         {
             highlightScanRegion: true,
             highlightCodeOutline: true,
             preferredCamera: selectedCamera.value,
-            workerSrc: "/libs/qr-scanner-worker.min.js", // Sesuaikan path worker
+            workerSrc: "/libs/qr-scanner-worker.min.js",
         }
     );
 

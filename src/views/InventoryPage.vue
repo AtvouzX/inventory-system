@@ -7,7 +7,7 @@
 
             <v-col>
                 <ItemList :items="items" :categories="categories" @item-deleted="fetchItems"
-                    @item-updated="fetchItems" />
+                    @item-updated="fetchItems" @item-added="fetchItems"/>
             </v-col>
 
         </v-row>
@@ -31,9 +31,15 @@ const fetchData = async () => {
     }
 };
 
+const fetchItems = async () => {
+    try {
+        items.value = await getItems(); // Memuat ulang items
+    } catch (error) {
+        console.error('Error fetching items:', error);
+    }
+};
+
 onMounted(fetchData);
 
-const fetchItems = () => {
-    getItems().then(data => items.value = data);
-};
+
 </script>
