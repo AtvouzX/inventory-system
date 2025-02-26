@@ -40,14 +40,39 @@ export const addCategory = async (categoryName) => {
 
 // Menambahkan item baru dengan category_id
 export const addItem = async (item) => {
-    const { data, error } = await supabase
+    const { data: existingItem, error: selectError } = await supabase
         .from("items")
-        .insert([{ name: item.name, quantity: item.quantity, category_id: item.category_id }])
-        .select();
+        .select("*")
+        .eq("name", item.name)
+        .eq("category_id", item.category_id)
+        .single();
 
-    if (error) console.error("Error adding item:", error);
-    return data ? data[0] : null;
+    if (selectError && selectError.code !== "PGRST116") {
+        console.error("Error checking item:", selectError);
+        return null;
+    }
+
+    if (existingItem) {
+        return await updateItem({
+            id: existingItem.id,
+            name: existingItem.name,
+            category_id: existingItem.category_id,
+            quantity: existingItem.quantity + item.quantity,
+        });
+    } else {
+        const { data, error } = await supabase
+            .from("items")
+            .insert([{ name: item.name, quantity: item.quantity, category_id: item.category_id }])
+            .select();
+
+        if (error) {
+            console.error("Error adding item:", error);
+            return null;
+        }
+        return data ? data[0] : null;
+    }
 };
+
 
 // Menghapus item berdasarkan ID
 export const deleteItem = async (id) => {
@@ -58,12 +83,17 @@ export const deleteItem = async (id) => {
 
 // Mengupdate item berdasarkan ID
 export const updateItem = async (item) => {
-    const { error } = await supabase
+    const { data, error } = await supabase
         .from("items")
         .update({ name: item.name, quantity: item.quantity, category_id: item.category_id })
-        .match({ id: item.id });
+        .match({ id: item.id })
+        .select();
 
-    if (error) console.error("Error updating item:", error);
+    if (error) {
+        console.error("Error updating item:", error);
+        return null;
+    }
+    return data ? data[0] : null;
 };
 
 // Mengambil item berdasarkan UUID
