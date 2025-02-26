@@ -68,7 +68,6 @@ import { addItem, getItemByUUID } from '@/services/api'; // Tambahkan fungsi get
 import BarcodeScanner from './BarcodeScanner.vue'; // Import komponen BarcodeScanner
 
 // Props untuk menerima daftar kategori dari parent
-// eslint-disable-next-line no-unused-vars
 const props = defineProps({
   categories: Array,
 });
