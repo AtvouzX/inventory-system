@@ -19,7 +19,7 @@
             </thead>
 
             <tbody>
-                <tr v-for="item in itemsWithCategory" :key="item.id">
+                <tr v-for="item in paginateditems" :key="item.id">
                     <td>{{ item.name }}</td>
                     <td>{{ item.categories ? item.categories.name : 'Uncategorized' }}</td>
                     <td>{{ item.quantity }}</td>
@@ -36,6 +36,13 @@
                 </tr>
             </tbody>
         </v-table>
+
+        <v-pagination
+            v-model="currentPage"
+            :length="totalPage"
+            :total-visible="5"
+            density="comfortable"
+            class="mt-4"></v-pagination>
 
         <!-- Dialog untuk Edit Item -->
         <v-dialog v-model="editDialog" max-width="500">
@@ -73,12 +80,23 @@ const props = defineProps({
 
 const emit = defineEmits(['item-deleted', 'item-updated', 'item-added']);
 
+const currentPage = ref(1);
+const itemsPerPage = ref(10);
+
 const itemsWithCategory = computed(() =>
     props.items.map(item => ({
         ...item,
         category: props.categories.find(c => c.id === item.category_id),
     }))
 );
+
+const paginateditems = computed(() => {
+    const start = (currentPage.value - 1) * itemsPerPage.value;
+    const end = start + itemsPerPage.value;
+    return itemsWithCategory.value.slice(start, end);
+});
+
+const totalPage = computed(() => Math.ceil(props.items.length / itemsPerPage.value));
 
 const editDialog = ref(false);
 const editedItem = ref({});
