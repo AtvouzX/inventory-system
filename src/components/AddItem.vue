@@ -35,8 +35,8 @@
             <!-- Tombol Submit dan Cancel -->
             <v-card-actions class="mt-4">
               <v-spacer></v-spacer>
-              <v-btn @click="dialog = false">Cancel</v-btn>
-              <v-btn type="submit" color="primary">Add Item</v-btn>
+              <v-btn @click="dialog = false, loading = false">Cancel</v-btn>
+              <v-btn :loading="loading" type="submit" color="primary" @click="load">Add Item</v-btn>
             </v-card-actions>
           </v-form>
         </v-card-text>
@@ -76,9 +76,10 @@ const props = defineProps({
 // Emit event ke parent saat item berhasil ditambahkan
 const emit = defineEmits(['item-added']);
 
-// State untuk mengontrol dialog form dan scanner
+// State untuk mengontrol dialog form, scanner, dan loading
 const dialog = ref(false);
 const scannerDialog = ref(false);
+const loading = ref(false);
 
 // Data untuk item baru
 const newItem = ref({
@@ -128,6 +129,7 @@ const handleScanned = async (result) => {
 // Fungsi untuk menangani submit form
 const handleSubmit = async () => {
   try {
+    loading.value = true;
     const itemToAdd = {
       uuid: newItem.value.uuid,
       name: newItem.value.name,
@@ -143,6 +145,8 @@ const handleSubmit = async () => {
     }
   } catch (error) {
     console.error('Error adding item:', error);
+  } finally {
+    loading.value = false;
   }
 };
 
@@ -154,5 +158,10 @@ const resetForm = () => {
     category_id: null,
     quantity: 0,
   };
+};
+
+const load = () => {
+  loading.value = true;
+  setTimeout(() => (loading.value = false), 30000);
 };
 </script>

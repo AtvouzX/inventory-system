@@ -15,7 +15,7 @@
                             :append-inner-icon="visible ? 'mdi-eye-off' : 'mdi-eye'"
                             prepend-inner-icon="mdi-lock-outline" @click:append-inner="visible = !visible"
                             variant="outlined" class="mb-4"></v-text-field>
-                        <v-btn type="submit" color="primary" block>
+                        <v-btn :loading="loading" type="submit" color="primary" block @click="load">
                             Login
                         </v-btn>
                     </form>
@@ -36,9 +36,11 @@ export default {
         const password = ref("");
         const error = ref("");
         const visible = ref(false);
+        const loading = ref(false);
 
         const handleLogin = async () => {
             try {
+                loading.value = true;
                 const { error: authError } = await supabase.auth.signInWithPassword({
                     email: email.value,
                     password: password.value,
@@ -50,7 +52,14 @@ export default {
                 emit('login');
             } catch (err) {
                 error.value = err.message;
+            } finally {
+                loading.value = false;
             }
+        };
+
+        const load = () => {
+            loading.value = true;
+            setTimeout(() => (loading.value = false), 30000);
         };
 
         return {
@@ -59,6 +68,8 @@ export default {
             error,
             handleLogin,
             visible,
+            loading,
+            load,
         };
     },
 };
