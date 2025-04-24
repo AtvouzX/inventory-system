@@ -6,8 +6,13 @@
             </v-col>
 
             <v-col>
-                <ItemList :items="items" :categories="categories" @item-deleted="fetchItems"
-                    @item-updated="fetchItems" @item-added="fetchItems"/>
+                <ItemList 
+                    :items="filteredItems" 
+                    :categories="categories" 
+                    @item-deleted="fetchItems"
+                    @item-updated="fetchItems" 
+                    @item-added="fetchItems"
+                />
             </v-col>
 
         </v-row>
@@ -15,17 +20,31 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import { getItems, getCategories } from '@/services/api';
+import { ref, onMounted, computed } from 'vue';
+import { getItems, getCategories, checkLowStockAlerts } from '@/services/api';
 import ItemList from '@/components/ItemList.vue';
 
 const items = ref([]);
 const categories = ref([]);
+const searchQuery = ref('');
+
+const filteredItems = computed(() => {
+    if (!searchQuery.value) return items.value;
+    
+    const query = searchQuery.value.toLowerCase();
+    return items.value.filter(item => 
+        item.name.toLowerCase().includes(query) ||
+        item.description?.toLowerCase().includes(query) ||
+        item.category?.toLowerCase().includes(query) ||
+        item.sku?.toLowerCase().includes(query)
+    );
+});
 
 const fetchData = async () => {
     try {
         items.value = await getItems();
         categories.value = await getCategories();
+        await checkLowStockAlerts();
     } catch (error) {
         console.error('Error loading data:', error);
     }
@@ -33,13 +52,18 @@ const fetchData = async () => {
 
 const fetchItems = async () => {
     try {
-        items.value = await getItems(); // Memuat ulang items
+        items.value = await getItems();
+        await checkLowStockAlerts();
     } catch (error) {
         console.error('Error fetching items:', error);
     }
 };
 
-onMounted(fetchData);
-
-
+// Listen for search events
+onMounted(() => {
+    fetchData();
+    document.addEventListener('search', (event) => {
+        searchQuery.value = event.detail.query;
+    });
+});
 </script>

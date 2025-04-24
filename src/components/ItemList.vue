@@ -19,7 +19,7 @@
             </thead>
 
             <tbody>
-                <tr v-for="item in itemsWithCategory" :key="item.id">
+                <tr v-for="item in paginateditems" :key="item.id">
                     <td>{{ item.name }}</td>
                     <td>{{ item.categories ? item.categories.name : 'Uncategorized' }}</td>
                     <td>{{ item.quantity }}</td>
@@ -36,6 +36,13 @@
                 </tr>
             </tbody>
         </v-table>
+
+        <v-pagination
+            v-model="currentPage"
+            :length="totalPage"
+            :total-visible="5"
+            density="comfortable"
+            class="mt-4"></v-pagination>
 
         <!-- Dialog untuk Edit Item -->
         <v-dialog v-model="editDialog" max-width="500">
@@ -62,7 +69,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
-import { deleteItem, updateItem } from '@/services/api';
+import { deleteItemWithActivity, updateItemWithActivity } from '@/services/api';
 import AddItem from './AddItem.vue';
 import QRGenerator from './QRGenerator.vue'; // Import komponen QRGenerator
 
@@ -73,12 +80,23 @@ const props = defineProps({
 
 const emit = defineEmits(['item-deleted', 'item-updated', 'item-added']);
 
+const currentPage = ref(1);
+const itemsPerPage = ref(10);
+
 const itemsWithCategory = computed(() =>
     props.items.map(item => ({
         ...item,
         category: props.categories.find(c => c.id === item.category_id),
     }))
 );
+
+const paginateditems = computed(() => {
+    const start = (currentPage.value - 1) * itemsPerPage.value;
+    const end = start + itemsPerPage.value;
+    return itemsWithCategory.value.slice(start, end);
+});
+
+const totalPage = computed(() => Math.ceil(props.items.length / itemsPerPage.value));
 
 const editDialog = ref(false);
 const editedItem = ref({});
@@ -108,8 +126,10 @@ const openQRDialog = (uuid) => {
 // Fungsi untuk menghapus item
 const handleDeleteItem = async (id) => {
     try {
-        await deleteItem(id);
-        emit('item-deleted');
+        const success = await deleteItemWithActivity(id);
+        if (success) {
+            emit('item-deleted');
+        }
     } catch (error) {
         console.error('Error deleting item:', error);
     }
@@ -118,9 +138,11 @@ const handleDeleteItem = async (id) => {
 // Fungsi untuk menyimpan perubahan item
 const saveItem = async () => {
     try {
-        await updateItem(editedItem.value);
-        emit('item-updated');
-        editDialog.value = false;
+        const result = await updateItemWithActivity(editedItem.value);
+        if (result) {
+            emit('item-updated', result);
+            editDialog.value = false;
+        }
     } catch (error) {
         console.error('Error updating item:', error);
     }
