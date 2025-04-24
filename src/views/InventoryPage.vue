@@ -1,11 +1,11 @@
 <template>
-    <v-container>
+    <v-container fluid class="pa-4">
         <v-row>
             <v-col cols="12">
-                <h1 class="text-h4 mb-6">Inventory Management</h1>
+                <InventorySummary />
             </v-col>
 
-            <v-col>
+            <v-col cols="12">
                 <ItemList 
                     :items="filteredItems" 
                     :categories="categories" 
@@ -14,7 +14,6 @@
                     @item-added="fetchItems"
                 />
             </v-col>
-
         </v-row>
     </v-container>
 </template>
@@ -23,6 +22,7 @@
 import { ref, onMounted, computed } from 'vue';
 import { getItems, getCategories, checkLowStockAlerts } from '@/services/api';
 import ItemList from '@/components/ItemList.vue';
+import InventorySummary from '@/components/InventorySummary.vue';
 
 const items = ref([]);
 const categories = ref([]);

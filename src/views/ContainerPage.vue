@@ -1,13 +1,11 @@
 <template>
     <v-app>
         <v-app-bar color="primary" density="compact">
-            <template v-slot:prepend>
-                <v-app-bar-nav-icon @click="drawer = !drawer"></v-app-bar-nav-icon>
-            </template>
-
-            <v-app-bar-title>
-                <v-icon start>mdi-package-variant</v-icon>
-                Inventory System
+            <v-app-bar-title class="d-flex align-center">
+                <div class="d-flex align-center">
+                    <img src="/logo.ico" alt="Logo" class="logo-icon" />
+                    <span class="ml-2">Inventory Watch and Keep</span>
+                </div>
             </v-app-bar-title>
 
             <v-text-field
@@ -29,7 +27,7 @@
             </template>
         </v-app-bar>
 
-        <v-navigation-drawer v-model="drawer" temporary>
+        <v-navigation-drawer class="bg-white" permanent>
             <v-list>
                 <v-list-item
                     prepend-icon="mdi-view-dashboard"
@@ -65,13 +63,11 @@
         </v-navigation-drawer>
 
         <v-main>
-            <v-container>
-                <DashboardPage v-if="currentPage === 'dashboard'" />
-                <InventoryPage v-else-if="currentPage === 'inventory'" />
-                <ScanPage v-else-if="currentPage === 'scan'" />
-                <ReportsPage v-else-if="currentPage === 'reports'" />
-                <SettingsPage v-else-if="currentPage === 'settings'" />
-            </v-container>
+            <DashboardPage v-if="currentPage === 'dashboard'" />
+            <InventoryPage v-else-if="currentPage === 'inventory'" />
+            <ScanPage v-else-if="currentPage === 'scan'" />
+            <ReportsPage v-else-if="currentPage === 'reports'" />
+            <SettingsPage v-else-if="currentPage === 'settings'" />
         </v-main>
     </v-app>
 </template>
@@ -84,7 +80,6 @@ import ScanPage from '@/views/ScanPage.vue';
 import ReportsPage from '@/views/ReportsPage.vue';
 import SettingsPage from '@/views/SettingsPage.vue';
 
-const drawer = ref(false);
 const currentPage = ref('dashboard');
 const searchQuery = ref('');
 
@@ -116,5 +111,15 @@ const performSearch = () => {
 
 .v-text-field {
     max-width: 300px;
+}
+
+.logo-icon {
+    height: 32px;
+    width: auto;
+    display: inline-block;
+}
+
+.search-field {
+    margin-left: 16px;
 }
 </style>

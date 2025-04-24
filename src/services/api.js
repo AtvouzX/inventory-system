@@ -210,7 +210,7 @@ export const deleteItemWithActivity = async (id) => {
     // Get item details before deleting
     const { data: item, error: selectError } = await supabase
         .from('items')
-        .select('name')
+        .select('name, quantity, category_id, categories(name)')
         .eq('id', id)
         .single();
 
@@ -219,7 +219,14 @@ export const deleteItemWithActivity = async (id) => {
         return false;
     }
 
-    // Delete the item
+    // Log the delete activity first
+    await logActivity(
+        id,
+        'delete',
+        `Deleted item: ${item.name} (${item.quantity} units) from ${item.categories?.name || 'Uncategorized'}`
+    );
+
+    // Delete the item after logging
     const { error: deleteError } = await supabase
         .from('items')
         .delete()
@@ -229,13 +236,6 @@ export const deleteItemWithActivity = async (id) => {
         console.error('Error deleting item:', deleteError);
         return false;
     }
-
-    // Log the delete activity
-    await logActivity(
-        id,
-        'delete',
-        `Deleted item ${item.name}`
-    );
 
     return true;
 };
