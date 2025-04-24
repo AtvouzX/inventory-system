@@ -64,8 +64,8 @@
 
 <script setup>
 import { ref } from 'vue';
-import { addItem, getItemByUUID } from '@/services/api'; // Tambahkan fungsi getItemByUUID
-import BarcodeScanner from './BarcodeScanner.vue'; // Import komponen BarcodeScanner
+import { addItemWithActivity, getItemByUUID } from '@/services/api';
+import BarcodeScanner from './BarcodeScanner.vue';
 
 // Props untuk menerima daftar kategori dari parent
 // eslint-disable-next-line no-unused-vars
@@ -125,23 +125,21 @@ const handleScanned = async (result) => {
   }
 };
 
-
 // Fungsi untuk menangani submit form
 const handleSubmit = async () => {
+  loading.value = true;
   try {
-    loading.value = true;
-    const itemToAdd = {
-      uuid: newItem.value.uuid,
+    const result = await addItemWithActivity({
       name: newItem.value.name,
       category_id: newItem.value.category_id,
-      quantity: parseInt(newItem.value.quantity, 10) || 0,
-    };
+      quantity: newItem.value.quantity,
+      low_stock_threshold: 10 // Default threshold
+    });
 
-    const addedItem = await addItem(itemToAdd);
-    if (addedItem) {
-      emit('item-added');
-      resetForm();
+    if (result) {
+      emit('item-added', result);
       dialog.value = false;
+      resetForm();
     }
   } catch (error) {
     console.error('Error adding item:', error);

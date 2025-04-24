@@ -69,7 +69,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
-import { deleteItem, updateItem } from '@/services/api';
+import { deleteItemWithActivity, updateItemWithActivity } from '@/services/api';
 import AddItem from './AddItem.vue';
 import QRGenerator from './QRGenerator.vue'; // Import komponen QRGenerator
 
@@ -126,8 +126,10 @@ const openQRDialog = (uuid) => {
 // Fungsi untuk menghapus item
 const handleDeleteItem = async (id) => {
     try {
-        await deleteItem(id);
-        emit('item-deleted');
+        const success = await deleteItemWithActivity(id);
+        if (success) {
+            emit('item-deleted');
+        }
     } catch (error) {
         console.error('Error deleting item:', error);
     }
@@ -136,9 +138,11 @@ const handleDeleteItem = async (id) => {
 // Fungsi untuk menyimpan perubahan item
 const saveItem = async () => {
     try {
-        await updateItem(editedItem.value);
-        emit('item-updated');
-        editDialog.value = false;
+        const result = await updateItemWithActivity(editedItem.value);
+        if (result) {
+            emit('item-updated', result);
+            editDialog.value = false;
+        }
     } catch (error) {
         console.error('Error updating item:', error);
     }
