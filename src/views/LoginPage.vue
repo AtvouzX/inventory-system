@@ -1,7 +1,7 @@
 <template>
     <v-app>
-        <v-container fluid class="fill-height pa-0">
-            <v-row no-gutters class="fill-height">
+        <v-container fluid class="fill-height pa-0" style="background-color: #ffffff;">
+            <v-row no-gutters class="fill-height" style="background-color: #ffffff;">
                 <v-col cols="12" md="6" class="d-flex flex-column justify-center align-center position-relative">
                     <img :src="logo" alt="logo" style="max-width: 400px; width: 100%; height: auto;" class="mb-4">
                     <h1 class="text-4xl font-bold text-center">INVENTORY WATCH AND KEEP</h1>
