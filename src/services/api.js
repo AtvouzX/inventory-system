@@ -295,3 +295,47 @@ export const checkLowStockAlerts = async () => {
         }
     }
 };
+
+// Get inventory summary statistics
+export const getInventorySummary = async () => {
+    try {
+        // Get all necessary data in a single query using a join
+        const { data, error } = await supabase
+            .from('items')
+            .select(`
+                id,
+                quantity,
+                low_stock_threshold,
+                categories!inner (
+                    id
+                )
+            `);
+
+        if (error) {
+            console.error('Error fetching inventory summary:', error);
+            return null;
+        }
+
+        // Calculate counts using the fetched data
+        const uniqueCategories = new Set(data.map(item => item.categories.id));
+        const totalCategories = uniqueCategories.size;
+        const totalProducts = data.length;
+        const totalQuantities = data.reduce((sum, item) => sum + (item.quantity || 0), 0);
+        const lowStockCount = data.filter(item => 
+            item.quantity > 0 && 
+            item.quantity <= (item.low_stock_threshold || 10)
+        ).length;
+        const outOfStockCount = data.filter(item => item.quantity === 0).length;
+
+        return {
+            totalCategories,
+            totalProducts,
+            totalQuantities,
+            lowStockCount,
+            outOfStockCount
+        };
+    } catch (error) {
+        console.error('Error in getInventorySummary:', error);
+        return null;
+    }
+};

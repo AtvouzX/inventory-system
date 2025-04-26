@@ -7,7 +7,7 @@
       <v-col cols="12" sm="4" md="4">
         <div class="text-center">
           <div class="text-subtitle-1 font-weight-bold blue--text text--darken-2">Categories</div>
-          <div class="text-h4 font-weight-bold my-2">14</div>
+          <div class="text-h4 font-weight-bold my-2">{{ summary.totalCategories }}</div>
           <div class="text-caption grey--text">Total categories</div>
         </div>
       </v-col>
@@ -19,11 +19,11 @@
             <div class="text-subtitle-1 font-weight-bold orange--text text--darken-2">Total Products</div>
             <v-row no-gutters align="center" justify="center" class="my-2">
               <v-col>
-                <div class="text-h4 font-weight-bold">868</div>
+                <div class="text-h4 font-weight-bold">{{ summary.totalProducts }}</div>
                 <div class="text-caption grey--text">Total product</div>
               </v-col>
               <v-col>
-                 <div class="text-h4 font-weight-bold">506</div> 
+                 <div class="text-h4 font-weight-bold">{{ summary.totalQuantities }}</div> 
                  <div class="text-caption grey--text">Total quantities</div>
               </v-col>
             </v-row>
@@ -37,11 +37,11 @@
           <div class="text-subtitle-1 font-weight-bold red--text text--lighten-1">Low Stocks</div>
           <v-row no-gutters align="center" justify="center" class="my-2">
              <v-col>
-                <div class="text-h4 font-weight-bold">12</div>
+                <div class="text-h4 font-weight-bold">{{ summary.lowStockCount }}</div>
                 <div class="text-caption grey--text">Low stock</div>
              </v-col>
               <v-col>
-                <div class="text-h4 font-weight-bold">2</div>
+                <div class="text-h4 font-weight-bold">{{ summary.outOfStockCount }}</div>
                 <div class="text-caption grey--text">Out of stock</div>
              </v-col>
           </v-row>
@@ -52,8 +52,27 @@
 </template>
 
 <script setup>
-// Placeholder for future props or logic
-// TODO: Fetch actual data for Total quantities
+import { ref, onMounted } from 'vue';
+import { getInventorySummary } from '@/services/api';
+
+const summary = ref({
+  totalCategories: 0,
+  totalProducts: 0,
+  totalQuantities: 0,
+  lowStockCount: 0,
+  outOfStockCount: 0
+});
+
+const fetchSummary = async () => {
+  const data = await getInventorySummary();
+  if (data) {
+    summary.value = data;
+  }
+};
+
+onMounted(() => {
+  fetchSummary();
+});
 </script>
 
 <style scoped>

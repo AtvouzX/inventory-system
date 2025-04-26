@@ -16,10 +16,14 @@
                         </div>
                         <div class="text-center mb-4">Welcome back! Please enter your details.</div>
                         <form @submit.prevent="handleLogin">
-                            <v-text-field v-model="email" type="email" label="Account" placeholder="Email address" required
+                            <v-text-field v-model="email" type="email" label="Account" placeholder="Email address" 
+                                :rules="[
+                                    v => !!v || 'Email is required',
+                                    v => /.+@.+\..+/.test(v) || 'Email must be valid'
+                                ]"
                                 variant="outlined" prepend-inner-icon="mdi-email-outline" class="mb-4"></v-text-field>
                             <v-text-field v-model="password" :type="visible ? 'text' : 'password'" label="Password"
-                                placeholder="Enter your password" :rules="required"
+                                placeholder="Enter your password" :rules="[v => !!v || 'Password is required']"
                                 :append-inner-icon="visible ? 'mdi-eye-off' : 'mdi-eye'"
                                 prepend-inner-icon="mdi-lock-outline" @click:append-inner="visible = !visible"
                                 variant="outlined" class="mb-4"></v-text-field>
