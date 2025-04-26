@@ -15,7 +15,7 @@ export default {
     return {
       isLoggedIn: false,
       inactivityTimer: null,
-      INACTIVITY_TIMEOUT: 2 * 60 * 1000, // 2 minutes
+      INACTIVITY_TIMEOUT: 30 * 60 * 1000, // 30 minutes
     };
   },
   methods: {
