@@ -8,7 +8,7 @@
         <div class="text-center">
           <div class="text-subtitle-1 font-weight-bold blue--text text--darken-2">Categories</div>
           <div class="text-h4 font-weight-bold my-2">14</div>
-          <div class="text-caption grey--text">Last 7 days</div>
+          <div class="text-caption grey--text">Total categories</div>
         </div>
       </v-col>
 
