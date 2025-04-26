@@ -7,7 +7,7 @@
       <v-col cols="12" sm="4" md="4">
         <div class="text-center">
           <div class="text-subtitle-1 font-weight-bold blue--text text--darken-2">Categories</div>
-          <div class="text-h4 font-weight-bold my-2">{{ summary.totalCategories }}</div>
+          <div class="text-h4 font-weight-bold my-2">{{ animatedSummary.totalCategories }}</div>
           <div class="text-caption grey--text">Total categories</div>
         </div>
       </v-col>
@@ -19,11 +19,11 @@
             <div class="text-subtitle-1 font-weight-bold orange--text text--darken-2">Total Products</div>
             <v-row no-gutters align="center" justify="center" class="my-2">
               <v-col>
-                <div class="text-h4 font-weight-bold">{{ summary.totalProducts }}</div>
+                <div class="text-h4 font-weight-bold">{{ animatedSummary.totalProducts }}</div>
                 <div class="text-caption grey--text">Total product</div>
               </v-col>
               <v-col>
-                 <div class="text-h4 font-weight-bold">{{ summary.totalQuantities }}</div> 
+                 <div class="text-h4 font-weight-bold">{{ animatedSummary.totalQuantities }}</div> 
                  <div class="text-caption grey--text">Total quantities</div>
               </v-col>
             </v-row>
@@ -37,11 +37,11 @@
           <div class="text-subtitle-1 font-weight-bold red--text text--lighten-1">Low Stocks</div>
           <v-row no-gutters align="center" justify="center" class="my-2">
              <v-col>
-                <div class="text-h4 font-weight-bold">{{ summary.lowStockCount }}</div>
+                <div class="text-h4 font-weight-bold">{{ animatedSummary.lowStockCount }}</div>
                 <div class="text-caption grey--text">Low stock</div>
              </v-col>
               <v-col>
-                <div class="text-h4 font-weight-bold">{{ summary.outOfStockCount }}</div>
+                <div class="text-h4 font-weight-bold">{{ animatedSummary.outOfStockCount }}</div>
                 <div class="text-caption grey--text">Out of stock</div>
              </v-col>
           </v-row>
@@ -52,7 +52,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, reactive } from 'vue';
 import { getInventorySummary } from '@/services/api';
 
 const summary = ref({
@@ -63,10 +63,42 @@ const summary = ref({
   outOfStockCount: 0
 });
 
+const animatedSummary = reactive({
+  totalCategories: 0,
+  totalProducts: 0,
+  totalQuantities: 0,
+  lowStockCount: 0,
+  outOfStockCount: 0
+});
+
+const animateValue = (start, end, duration, property) => {
+  const startTime = performance.now();
+  const updateValue = (currentTime) => {
+    const elapsedTime = currentTime - startTime;
+    if (elapsedTime > duration) {
+      animatedSummary[property] = end;
+      return;
+    }
+    
+    const progress = elapsedTime / duration;
+    const currentValue = Math.floor(start + (end - start) * progress);
+    animatedSummary[property] = currentValue;
+    requestAnimationFrame(updateValue);
+  };
+  requestAnimationFrame(updateValue);
+};
+
 const fetchSummary = async () => {
   const data = await getInventorySummary();
   if (data) {
     summary.value = data;
+    // Animate each value
+    const duration = 800; // ms
+    animateValue(0, data.totalCategories, duration, 'totalCategories');
+    animateValue(0, data.totalProducts, duration, 'totalProducts');
+    animateValue(0, data.totalQuantities, duration, 'totalQuantities');
+    animateValue(0, data.lowStockCount, duration, 'lowStockCount');
+    animateValue(0, data.outOfStockCount, duration, 'outOfStockCount');
   }
 };
 
