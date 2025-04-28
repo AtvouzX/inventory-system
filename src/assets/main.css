@@ -1,9 +1,39 @@
 @import './base.css';
 @import "tailwindcss";
 
+/* Override browser autofill styles */
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus,
 input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 30px white inset !important;
+    -webkit-text-fill-color: #1e1e1e !important;
     transition: background-color 5000000s ease-in-out 0s;
+}
+
+/* For dark mode support */
+.v-theme--dark input:-webkit-autofill,
+.v-theme--dark input:-webkit-autofill:hover,
+.v-theme--dark input:-webkit-autofill:focus,
+.v-theme--dark input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 30px #1e1e1e inset !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+/* Firefox */
+input:-moz-autofill,
+input:-moz-autofill:hover,
+input:-moz-autofill:focus,
+input:-moz-autofill:active {
+    background-color: white !important;
+    color: #1e1e1e !important;
+}
+
+/* Firefox dark mode */
+.v-theme--dark input:-moz-autofill,
+.v-theme--dark input:-moz-autofill:hover,
+.v-theme--dark input:-moz-autofill:focus,
+.v-theme--dark input:-moz-autofill:active {
+    background-color: #1e1e1e !important;
+    color: #ffffff !important;
 }

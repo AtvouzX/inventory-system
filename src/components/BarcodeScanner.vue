@@ -1,28 +1,49 @@
 <template>
     <v-card>
-        <v-card-title>
+        <v-card-title class="text-h5 pa-4">
             <v-icon start>mdi-qrcode-scan</v-icon>
             Barcode Scanner
         </v-card-title>
-
-        <v-card-text>
+        <v-divider></v-divider>
+        <v-card-text class="pa-4">
             <!-- Tombol Mulai dan Hentikan Scan -->
-            <v-btn color="primary" @click="startScanner" block class="mb-2">
+            <v-btn 
+                color="primary" 
+                @click="startScanner" 
+                block 
+                class="mb-4"
+                variant="flat"
+            >
                 <v-icon start>mdi-play</v-icon>
                 Start Scan
             </v-btn>
 
-            <v-btn color="error" @click="stopScanner" block class="mb-2">
+            <v-btn 
+                color="error" 
+                @click="stopScanner" 
+                block 
+                class="mb-4"
+                variant="flat"
+            >
                 <v-icon start>mdi-stop</v-icon>
                 Stop Scan
             </v-btn>
 
             <!-- Dropdown untuk memilih kamera -->
-            <v-select v-model="selectedCamera" :items="cameras" item-title="label" item-value="id" label="Select Camera"
-                @update:modelValue="changeCamera" class="mb-4"></v-select>
+            <v-select 
+                v-model="selectedCamera" 
+                :items="cameras" 
+                item-title="label" 
+                item-value="id" 
+                label="Select Camera"
+                @update:modelValue="changeCamera" 
+                variant="outlined"
+                density="comfortable"
+                class="mb-4"
+            ></v-select>
 
             <!-- Video untuk menampilkan kamera -->
-            <video ref="videoRef" class="w-full h-64" style="border: 1px solid #ccc;"></video>
+            <video ref="videoRef" class="w-full h-64" style="border: 1px solid #ccc; border-radius: 4px;"></video>
         </v-card-text>
     </v-card>
 </template>
@@ -123,5 +144,9 @@ onUnmounted(() => {
 .h-64 {
     height: 256px;
     /* Sesuaikan tinggi video */
+}
+
+.v-card {
+    border-radius: 8px;
 }
 </style>

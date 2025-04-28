@@ -5,57 +5,90 @@
       Add Item
     </v-btn>
 
-    <v-dialog v-model="dialog" max-width="600">
+    <v-dialog v-model="dialog" max-width="500">
       <v-card>
-        <v-card-title>
+        <v-card-title class="text-h5 pa-4">
           <v-icon start>mdi-plus</v-icon>
           Add New Item
         </v-card-title>
-
-        <v-card-text>
+        <v-divider></v-divider>
+        <v-card-text class="pa-4">
           <v-form @submit.prevent="handleSubmit">
-            <!-- Input Nama Item -->
-            <v-text-field v-model="newItem.name" label="Item Name" :rules="[v => !!v || 'Name is required']" required
-              :disabled="!!newItem.uuid" />
+            <v-text-field
+              v-model="newItem.name"
+              label="Name"
+              variant="outlined"
+              density="comfortable"
+              :rules="[v => !!v || 'Name is required']"
+              required
+              :disabled="!!newItem.uuid"
+              class="mb-4"
+            />
 
-            <!-- Dropdown Kategori -->
-            <v-select v-model="newItem.category_id" :items="categories" item-title="name" item-value="id"
-              label="Category" :rules="[v => !!v || 'Category is required']" :disabled="!!newItem.uuid" />
+            <v-select
+              v-model="newItem.category_id"
+              :items="categories"
+              item-title="name"
+              item-value="id"
+              label="Category"
+              variant="outlined"
+              density="comfortable"
+              :rules="[v => !!v || 'Category is required']"
+              :disabled="!!newItem.uuid"
+              class="mb-4"
+            />
 
-            <!-- Input Quantity -->
-            <v-text-field v-model.number="newItem.quantity" label="Quantity" type="number"
-              :rules="[v => v >= 0 || 'Minimum 0']" required />
+            <v-text-field
+              v-model.number="newItem.quantity"
+              label="Quantity"
+              type="number"
+              variant="outlined"
+              density="comfortable"
+              :rules="[v => v >= 0 || 'Minimum 0']"
+              required
+              class="mb-4"
+            />
 
-            <!-- Tombol Scanner -->
-            <v-btn color="secondary" @click="scannerDialog = true" class="mt-2" block>
+            <v-btn
+              color="secondary"
+              @click="scannerDialog = true"
+              variant="outlined"
+              block
+              class="mb-4"
+            >
               <v-icon start>mdi-qrcode-scan</v-icon>
               Scan QR Code
             </v-btn>
-
-            <!-- Tombol Submit dan Cancel -->
-            <v-card-actions class="mt-4">
-              <v-spacer></v-spacer>
-              <v-btn @click="dialog = false, loading = false">Cancel</v-btn>
-              <v-btn :loading="loading" type="submit" color="primary" @click="load">Add Item</v-btn>
-            </v-card-actions>
           </v-form>
         </v-card-text>
+        <v-divider></v-divider>
+        <v-card-actions class="pa-4">
+          <v-spacer></v-spacer>
+          <v-btn variant="outlined" @click="dialog = false, loading = false">Cancel</v-btn>
+          <v-btn
+            :loading="loading"
+            color="primary"
+            variant="flat"
+            @click="handleSubmit"
+          >
+            Add Item
+          </v-btn>
+        </v-card-actions>
       </v-card>
     </v-dialog>
 
     <!-- Dialog untuk Scanner -->
-    <v-dialog v-model="scannerDialog" max-width="600">
+    <v-dialog v-model="scannerDialog" max-width="500">
       <v-card>
-        <v-card-title>
-          <v-icon start>mdi-qrcode-scan</v-icon>
-          Scan QR Code
-        </v-card-title>
-        <v-card-text>
+        
+        <v-divider></v-divider>
+        <v-card-text class="pa-4">
           <BarcodeScanner @scanned="handleScanned" />
         </v-card-text>
-        <v-card-actions>
+        <v-divider></v-divider>
+        <v-card-actions class="pa-4">
           <v-spacer></v-spacer>
-          <v-btn @click="scannerDialog = false">Close</v-btn>
+          <v-btn variant="outlined" @click="scannerDialog = false">Close</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -156,10 +189,5 @@ const resetForm = () => {
     category_id: null,
     quantity: 0,
   };
-};
-
-const load = () => {
-  loading.value = true;
-  setTimeout(() => (loading.value = false), 30000);
 };
 </script>

@@ -1,5 +1,5 @@
 <template>
-    <div class="dashboard">
+    <div fluid class="dashboard pa-4">
         <v-row>
             <v-col cols="12" sm="6" md="3">
                 <v-card class="stat-card" color="primary">

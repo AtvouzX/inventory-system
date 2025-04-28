@@ -210,7 +210,7 @@ export const deleteItemWithActivity = async (id) => {
     // Get item details before deleting
     const { data: item, error: selectError } = await supabase
         .from('items')
-        .select('name')
+        .select('name, quantity, category_id, categories(name)')
         .eq('id', id)
         .single();
 
@@ -219,7 +219,14 @@ export const deleteItemWithActivity = async (id) => {
         return false;
     }
 
-    // Delete the item
+    // Log the delete activity first
+    await logActivity(
+        id,
+        'delete',
+        `Deleted item: ${item.name} (${item.quantity} units) from ${item.categories?.name || 'Uncategorized'}`
+    );
+
+    // Delete the item after logging
     const { error: deleteError } = await supabase
         .from('items')
         .delete()
@@ -229,13 +236,6 @@ export const deleteItemWithActivity = async (id) => {
         console.error('Error deleting item:', deleteError);
         return false;
     }
-
-    // Log the delete activity
-    await logActivity(
-        id,
-        'delete',
-        `Deleted item ${item.name}`
-    );
 
     return true;
 };
@@ -293,5 +293,49 @@ export const checkLowStockAlerts = async () => {
                 `${item.name} is ${isOutOfStock ? 'out of stock' : 'running low'} (${item.quantity} remaining)`
             );
         }
+    }
+};
+
+// Get inventory summary statistics
+export const getInventorySummary = async () => {
+    try {
+        // Get all necessary data in a single query using a join
+        const { data, error } = await supabase
+            .from('items')
+            .select(`
+                id,
+                quantity,
+                low_stock_threshold,
+                categories!inner (
+                    id
+                )
+            `);
+
+        if (error) {
+            console.error('Error fetching inventory summary:', error);
+            return null;
+        }
+
+        // Calculate counts using the fetched data
+        const uniqueCategories = new Set(data.map(item => item.categories.id));
+        const totalCategories = uniqueCategories.size;
+        const totalProducts = data.length;
+        const totalQuantities = data.reduce((sum, item) => sum + (item.quantity || 0), 0);
+        const lowStockCount = data.filter(item => 
+            item.quantity > 0 && 
+            item.quantity <= (item.low_stock_threshold || 10)
+        ).length;
+        const outOfStockCount = data.filter(item => item.quantity === 0).length;
+
+        return {
+            totalCategories,
+            totalProducts,
+            totalQuantities,
+            lowStockCount,
+            outOfStockCount
+        };
+    } catch (error) {
+        console.error('Error in getInventorySummary:', error);
+        return null;
     }
 };
