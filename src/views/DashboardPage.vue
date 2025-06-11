@@ -1,62 +1,37 @@
 <template>
-    <div fluid class="dashboard pa-4">
+    <div class="dashboard pa-4">
         <v-row>
-            <v-col cols="12" sm="6" md="3">
-                <v-card class="stat-card" color="primary">
-                    <v-card-text>
-                        <div class="d-flex align-center">
-                            <v-icon size="40" class="mr-3">mdi-package-variant</v-icon>
-                            <div>
-                                <div class="text-h6">Total Items</div>
-                                <div class="text-h4">{{ totalItems }}</div>
-                            </div>
-                        </div>
-                    </v-card-text>
-                </v-card>
-            </v-col>
-            <v-col cols="12" sm="6" md="3">
-                <v-card class="stat-card" color="success">
-                    <v-card-text>
-                        <div class="d-flex align-center">
-                            <v-icon size="40" class="mr-3">mdi-check-circle</v-icon>
-                            <div>
-                                <div class="text-h6">In Stock</div>
-                                <div class="text-h4">{{ inStockItems }}</div>
-                            </div>
-                        </div>
-                    </v-card-text>
-                </v-card>
-            </v-col>
-            <v-col cols="12" sm="6" md="3">
-                <v-card class="stat-card" color="warning">
-                    <v-card-text>
-                        <div class="d-flex align-center">
-                            <v-icon size="40" class="mr-3">mdi-alert</v-icon>
-                            <div>
-                                <div class="text-h6">Low Stock</div>
-                                <div class="text-h4">{{ lowStockItems }}</div>
-                            </div>
-                        </div>
-                    </v-card-text>
-                </v-card>
-            </v-col>
-            <v-col cols="12" sm="6" md="3">
-                <v-card class="stat-card" color="error">
-                    <v-card-text>
-                        <div class="d-flex align-center">
-                            <v-icon size="40" class="mr-3">mdi-close-circle</v-icon>
-                            <div>
-                                <div class="text-h6">Out of Stock</div>
-                                <div class="text-h4">{{ outOfStockItems }}</div>
-                            </div>
-                        </div>
-                    </v-card-text>
-                </v-card>
-            </v-col>
-        </v-row>
-
-        <v-row class="mt-4">
+            <!-- Welcome Card -->
             <v-col cols="12" md="8">
+                <v-card class="welcome-card mb-4">
+                    <v-row no-gutters align="center">
+                        <v-col cols="12" sm="4" class="d-flex justify-center align-center">
+                            <img src="/logo.ico" alt="Mascot" class="mascot-img" />
+                        </v-col>
+                        <v-col cols="12" sm="8">
+                            <div class="welcome-content">
+                                <div class="text-h5 font-weight-bold mb-2">🎉 Selamat Datang di IWAK! 🐟</div>
+                                <div class="mb-2">
+                                    Halo dan terima kasih telah mengakses Inventory Watch And Keep (IWAK)!<br />
+                                    Website ini merupakan hasil tugas kelompok dari mata kuliah Rekayasa Perangkat Lunak yang dirancang untuk memudahkan penyimpanan data menggunakan teknologi scanner.
+                                </div>
+                                <div class="font-italic">✨ Selamat mencoba! ✨</div>
+                            </div>
+                        </v-col>
+                    </v-row>
+                </v-card>
+                <!-- Quick Access -->
+                <!-- <v-card class="quick-access-card mb-4">
+                    <div class="text-h6 font-weight-medium mb-2">Quick Access</div>
+                    <v-row>
+                        <v-col cols="3" v-for="(action, i) in quickActions" :key="i" class="d-flex justify-center">
+                            <v-btn icon large color="primary" @click="handleAction(action.action)">
+                                <v-icon size="36">{{ action.icon }}</v-icon>
+                            </v-btn>
+                        </v-col>
+                    </v-row>
+                </v-card> -->
+                <!-- Recent Activity (unchanged) -->
                 <v-card>
                     <v-card-title>Recent Activity</v-card-title>
                     <v-card-text>
@@ -79,19 +54,54 @@
                     </v-card-text>
                 </v-card>
             </v-col>
+            <!-- Stats Cards Vertical Stack -->
             <v-col cols="12" md="4">
-                <v-card>
-                    <v-card-title>Quick Actions</v-card-title>
+                <v-card class="stat-card mb-4 stat-total">
                     <v-card-text>
-                        <v-list>
-                            <v-list-item
-                                v-for="(action, i) in quickActions"
-                                :key="i"
-                                :prepend-icon="action.icon"
-                                :title="action.title"
-                                @click="handleAction(action.action)"
-                            ></v-list-item>
-                        </v-list>
+                        <div class="stat-content">
+                            <div class="stat-title">Total Item</div>
+                            <div class="stat-icon-bg stat-total-bg">
+                                <IconBox style="width:28px;height:28px;color:#DBA362;" />
+                            </div>
+                            <div class="stat-number">{{ totalItems }}</div>
+                            <div class="stat-desc">Quantity in Hand</div>
+                        </div>
+                    </v-card-text>
+                </v-card>
+                <v-card class="stat-card mb-4 stat-instock">
+                    <v-card-text>
+                        <div class="stat-content">
+                            <div class="stat-title">Instock</div>
+                            <div class="stat-icon-bg stat-instock-bg">
+                                <IconList style="width:28px;height:28px;color:#43a047;" />
+                            </div>
+                            <div class="stat-number">{{ inStockItems }}</div>
+                            <div class="stat-desc">Number of Categories</div>
+                        </div>
+                    </v-card-text>
+                </v-card>
+                <v-card class="stat-card mb-4 stat-lowstock">
+                    <v-card-text>
+                        <div class="stat-content">
+                            <div class="stat-title">Low Stock</div>
+                            <div class="stat-icon-bg stat-lowstock-bg">
+                                <IconList style="width:28px;height:28px;color:#fbc02d;" />
+                            </div>
+                            <div class="stat-number">{{ lowStockItems }}</div>
+                            <div class="stat-desc">Number of Categories</div>
+                        </div>
+                    </v-card-text>
+                </v-card>
+                <v-card class="stat-card mb-4 stat-outofstock">
+                    <v-card-text>
+                        <div class="stat-content">
+                            <div class="stat-title">Out of Stock</div>
+                            <div class="stat-icon-bg stat-outofstock-bg">
+                                <IconList style="width:28px;height:28px;color:#e53935;" />
+                            </div>
+                            <div class="stat-number">{{ outOfStockItems }}</div>
+                            <div class="stat-desc">Number of Categories</div>
+                        </div>
                     </v-card-text>
                 </v-card>
             </v-col>
@@ -102,6 +112,8 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { supabase } from '@/services/api';
+import IconBox from '@/components/icons/IconBox.vue';
+import IconList from '@/components/icons/IconList.vue';
 
 const totalItems = ref(0);
 const inStockItems = ref(0);
@@ -204,16 +216,98 @@ onMounted(fetchDashboardData);
     padding: 20px 0;
 }
 
-.stat-card {
-    height: 100%;
-    transition: transform 0.2s;
+.welcome-card {
+    margin-bottom: 24px;
+    padding: 24px 16px;
 }
-
+.mascot-img {
+    max-width: 120px;
+    width: 100%;
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    background: #fff;
+}
+.welcome-content {
+    padding: 8px 16px;
+}
+.quick-access-card {
+    margin-bottom: 24px;
+    padding: 16px;
+}
+.stat-card {
+    /* height: 100%; */
+    min-height: 50px;
+    max-width: 350px;
+    margin-left: auto;
+    margin-right: auto;
+    transition: transform 0.2s;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+}
 .stat-card:hover {
     transform: translateY(-5px);
 }
-
+.stat-total {
+    /* border-left: 6px solid #ffb300; */
+}
+.stat-instock {
+    /* border-left: 6px solid #43a047; */
+}
+.stat-lowstock {
+    /* border-left: 6px solid #fbc02d; */
+}
+.stat-outofstock {
+    /* border-left: 6px solid #e53935; */
+}
 .v-card {
     border-radius: 8px;
+}
+.stat-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 6px;
+    padding: 8px 0;
+}
+.stat-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #444b54;
+}
+.stat-icon-bg {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    padding: 4px;
+    margin: 0 auto;
+    /* margin-bottom: 2px; */
+    background: #f5f7fa;
+}
+.stat-total-bg {
+    background: #fff8e1;
+}
+.stat-instock-bg {
+    background: #e8f5e9;
+}
+.stat-lowstock-bg {
+    background: #fffde7;
+}
+.stat-outofstock-bg {
+    background: #ffebee;
+}
+.stat-number {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #444b54;
+    margin: 0;
+}
+.stat-desc {
+    font-size: 0.95rem;
+    color: #666;
+    margin-top: -2px;
 }
 </style> 

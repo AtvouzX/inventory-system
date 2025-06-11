@@ -339,3 +339,21 @@ export const getInventorySummary = async () => {
         return null;
     }
 };
+
+// Get current user profile from Supabase Auth
+export const getCurrentUserProfile = async () => {
+    const { data, error } = await supabase.auth.getUser();
+    if (error) {
+        console.error('Error fetching user:', error);
+        return null;
+    }
+    if (!data || !data.user) return null;
+    const { id, email, user_metadata } = data.user;
+    return {
+        id,
+        email,
+        name: user_metadata?.name || '',
+        bio: user_metadata?.bio || '',
+        avatar_url: user_metadata?.avatar_url || '',
+    };
+};
