@@ -33,9 +33,30 @@
               @click="toggleSelectAll"
             ></v-checkbox>
           </th>
-          <th class="text-left font-weight-bold">Name</th>
-          <th class="text-left font-weight-bold">Category</th>
-          <th class="text-left font-weight-bold">Quantity</th>
+          <th class="text-left font-weight-bold sortable" @click="sortBy('name')">
+            Name
+            <v-icon
+              v-if="sortKey === 'name'"
+              :icon="sortOrder === 'asc' ? 'mdi-arrow-up' : 'mdi-arrow-down'"
+              size="small"
+            ></v-icon>
+          </th>
+          <th class="text-left font-weight-bold sortable" @click="sortBy('category')">
+            Category
+            <v-icon
+              v-if="sortKey === 'category'"
+              :icon="sortOrder === 'asc' ? 'mdi-arrow-up' : 'mdi-arrow-down'"
+              size="small"
+            ></v-icon>
+          </th>
+          <th class="text-left font-weight-bold sortable" @click="sortBy('quantity')">
+            Quantity
+            <v-icon
+              v-if="sortKey === 'quantity'"
+              :icon="sortOrder === 'asc' ? 'mdi-arrow-up' : 'mdi-arrow-down'"
+              size="small"
+            ></v-icon>
+          </th>
           <th class="text-right font-weight-bold">Actions</th>
         </tr>
       </thead>
@@ -189,6 +210,8 @@ const emit = defineEmits(["item-deleted", "item-updated", "item-added"]);
 
 const currentPage = ref(1);
 const itemsPerPage = ref(10);
+const sortKey = ref("name");
+const sortOrder = ref("asc");
 
 const itemsWithCategory = computed(() =>
   props.items.map((item) => ({
@@ -197,10 +220,40 @@ const itemsWithCategory = computed(() =>
   }))
 );
 
+const sortedItems = computed(() => {
+  const items = [...itemsWithCategory.value];
+  return items.sort((a, b) => {
+    let aValue, bValue;
+
+    switch (sortKey.value) {
+      case "name":
+        aValue = a.name.toLowerCase();
+        bValue = b.name.toLowerCase();
+        break;
+      case "category":
+        aValue = (a.categories?.name || "Uncategorized").toLowerCase();
+        bValue = (b.categories?.name || "Uncategorized").toLowerCase();
+        break;
+      case "quantity":
+        aValue = a.quantity;
+        bValue = b.quantity;
+        break;
+      default:
+        return 0;
+    }
+
+    if (sortOrder.value === "asc") {
+      return aValue > bValue ? 1 : -1;
+    } else {
+      return aValue < bValue ? 1 : -1;
+    }
+  });
+});
+
 const paginateditems = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage.value;
   const end = start + itemsPerPage.value;
-  return itemsWithCategory.value.slice(start, end);
+  return sortedItems.value.slice(start, end);
 });
 
 const totalPage = computed(() => Math.ceil(props.items.length / itemsPerPage.value));
@@ -308,6 +361,15 @@ const saveItem = async () => {
 const fetchItems = () => {
   emit("item-added");
 };
+
+const sortBy = (key) => {
+  if (sortKey.value === key) {
+    sortOrder.value = sortOrder.value === "asc" ? "desc" : "asc";
+  } else {
+    sortKey.value = key;
+    sortOrder.value = "asc";
+  }
+};
 </script>
 
 <style scoped>
@@ -325,5 +387,14 @@ const fetchItems = () => {
 
 .v-chip {
   font-weight: 500;
+}
+
+.sortable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.sortable:hover {
+  background-color: rgba(0, 0, 0, 0.04);
 }
 </style>
