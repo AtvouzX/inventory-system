@@ -190,9 +190,30 @@
       <v-col cols="12">
         <v-card class="pa-6 text-center">
           <v-row>
-            <v-col cols="4">About us</v-col>
-            <v-col cols="4">Privacy Policy</v-col>
-            <v-col cols="4">Terms of Use</v-col>
+            <v-col cols="4">
+              <a
+                href="https://github.com/AtvouzX/inventory-system/"
+                target="_blank"
+                class="text-decoration-none text-primary"
+                >About us</a
+              >
+            </v-col>
+            <v-col cols="4">
+              <a
+                href="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+                target="_blank"
+                class="text-decoration-none text-primary"
+                >Privacy Policy</a
+              >
+            </v-col>
+            <v-col cols="4">
+              <a
+                href="https://www.youtube.com/watch?v=Dc7gc7BECk0"
+                target="_blank"
+                class="text-decoration-none text-primary"
+                >Terms of Use</a
+              >
+            </v-col>
           </v-row>
         </v-card>
       </v-col>
