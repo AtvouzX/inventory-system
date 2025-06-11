@@ -177,19 +177,18 @@ export default {
 
         if (authError) throw authError;
 
-        // Save additional user data to custom users table
-        const { error: dbError } = await supabase.from("users").insert([
+        // Create profile in public.profile table
+        const { error: profileError } = await supabase.from("profile").insert([
           {
-            uuid: authData.user.id,
+            id: authData.user.id,
             display_name: signupData.value.fullName,
             email: signupData.value.email,
-            provider: authData.user.app_metadata.provider,
-            created_at: authData.user.created_at,
-            last_sign_in_at: authData.user.last_sign_in_at,
+            bio: "",
+            avatar_url: "",
           },
         ]);
 
-        if (dbError) throw dbError;
+        if (profileError) throw profileError;
 
         // Switch back to login form after successful signup
         isLogin.value = true;

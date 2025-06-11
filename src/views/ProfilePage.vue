@@ -18,7 +18,9 @@
                     </v-avatar>
                   </template>
                   <v-list-item-title class="text-subtitle-1">Username</v-list-item-title>
-                  <v-list-item-subtitle class="text-body-2">{{ profile.name || 'Kelompok 11' }}</v-list-item-subtitle>
+                  <v-list-item-subtitle class="text-body-2">{{
+                    profile.display_name || "Kelompok 11"
+                  }}</v-list-item-subtitle>
                 </v-list-item>
                 <v-divider></v-divider>
                 <v-list-item>
@@ -28,7 +30,9 @@
                     </v-avatar>
                   </template>
                   <v-list-item-title class="text-subtitle-1">Email</v-list-item-title>
-                  <v-list-item-subtitle class="text-body-2">{{ profile.email }}</v-list-item-subtitle>
+                  <v-list-item-subtitle class="text-body-2">{{
+                    profile.email
+                  }}</v-list-item-subtitle>
                 </v-list-item>
                 <v-divider></v-divider>
                 <v-list-item>
@@ -38,7 +42,9 @@
                     </v-avatar>
                   </template>
                   <v-list-item-title class="text-subtitle-1">Bio</v-list-item-title>
-                  <v-list-item-subtitle class="text-body-2">{{ profile.bio || 'Iwak Sigma' }}</v-list-item-subtitle>
+                  <v-list-item-subtitle class="text-body-2">{{
+                    profile.bio || "Iwak Sigma"
+                  }}</v-list-item-subtitle>
                 </v-list-item>
               </v-list>
             </v-col>
@@ -64,21 +70,39 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import { getCurrentUserProfile } from '@/services/api';
-import defaultAvatar from '@/assets/logo.png';
+import { ref, onMounted } from "vue";
+import { supabase } from "@/services/api";
+import defaultAvatar from "@/assets/logo.png";
 
 const profile = ref({
-  name: '',
-  email: '',
-  bio: '',
-  avatar_url: '',
+  display_name: "",
+  email: "",
+  bio: "",
+  avatar_url: "",
 });
 
 onMounted(async () => {
-  const user = await getCurrentUserProfile();
-  if (user) {
-    profile.value = user;
+  try {
+    // Get the current user's ID
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return;
+
+    // Fetch profile data from public.profile table
+    const { data: profileData, error } = await supabase
+      .from("profile")
+      .select("*")
+      .eq("id", user.id)
+      .single();
+
+    if (error) throw error;
+
+    if (profileData) {
+      profile.value = profileData;
+    }
+  } catch (error) {
+    console.error("Error fetching profile:", error);
   }
 });
 </script>
@@ -92,4 +116,4 @@ onMounted(async () => {
   border-radius: 24px;
   box-shadow: 0 4px 24px rgba(44, 62, 80, 0.12);
 }
-</style> 
+</style>
