@@ -475,3 +475,59 @@ export const getCurrentUserProfile = async () => {
     avatar_url: dataUser.user_metadata?.avatar_url || "",
   };
 };
+
+// Update user profile
+export const updateUserProfile = async (updates) => {
+  try {
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError) throw authError;
+    if (!user) throw new Error("User not logged in");
+
+    // Update user metadata in Supabase Auth
+    const { error: updateAuthError } = await supabase.auth.updateUser({
+      data: {
+        display_name: updates.display_name,
+        bio: updates.bio,
+      },
+    });
+
+    if (updateAuthError) throw updateAuthError;
+
+    // Update profile in public.profile table
+    const { data, error: updateProfileError } = await supabase
+      .from("profile")
+      .update({
+        display_name: updates.display_name,
+        bio: updates.bio,
+      })
+      .eq("id", user.id)
+      .select()
+      .single();
+
+    if (updateProfileError) throw updateProfileError;
+
+    return data;
+  } catch (error) {
+    console.error("Error updating profile:", error);
+    throw error;
+  }
+};
+
+// Update user password
+export const updateUserPassword = async (newPassword) => {
+  try {
+    const { error } = await supabase.auth.updateUser({
+      password: newPassword,
+    });
+
+    if (error) throw error;
+    return true;
+  } catch (error) {
+    console.error("Error updating password:", error);
+    throw error;
+  }
+};
