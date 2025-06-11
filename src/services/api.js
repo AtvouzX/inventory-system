@@ -151,25 +151,43 @@ export const getItemByUUID = async (uuid) => {
 
 // Log activity
 export const logActivity = async (itemId, activityType, description) => {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return null;
+  try {
+    const {
+      data: { user },
+      error: authError, // Tangkap juga authError untuk logging yang lebih baik
+    } = await supabase.auth.getUser();
 
-  const { data, error } = await supabase
-    .from("activity_logs")
-    .insert([
-      {
-        item_id: itemId,
-        activity_type: activityType,
-        description: description,
-        user_id: user.id,
-      },
-    ])
-    .select();
+    if (authError) {
+      console.error("Error getting user for activity log:", authError.message);
+      return null;
+    }
+    if (!user) {
+      console.warn("User not logged in, cannot log activity.");
+      return null;
+    }
 
-  if (error) console.error("Error logging activity:", error);
-  return data ? data[0] : null;
+    const { data, error } = await supabase
+      .from("activity_logs")
+      .insert([
+        {
+          item_id: itemId,
+          activity_type: activityType,
+          description: description,
+          // user_id: user.id,
+        },
+      ])
+      .select();
+
+    if (error) {
+      console.error("Error logging activity:", error.message || error);
+      return null;
+    }
+
+    return data ? data[0] : null;
+  } catch (caughtError) {
+    console.error("Caught unexpected error in logActivity:", caughtError.message || caughtError);
+    return null;
+  }
 };
 
 // Update item with activity logging
@@ -378,7 +396,9 @@ export const checkLowStockAlerts = async () => {
         await logActivity(
           item.id,
           isOutOfStock ? "out_of_stock" : "low_stock",
-          `${item.name} is ${isOutOfStock ? "out of stock" : "running low"} (${item.quantity} remaining)`
+          `${item.name} is ${isOutOfStock ? "out of stock" : "running low"} (${
+            item.quantity
+          } remaining)`
         );
       }
     }
